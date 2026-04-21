@@ -13,6 +13,16 @@ const envSchema = z.object({
 });
 
 function validateEnv() {
+	// In test environment, provide defaults if not set
+	if (process.env.NODE_ENV === "test") {
+		process.env.DATABASE_URL =
+			process.env.DATABASE_URL ||
+			"postgres://test:test@localhost:5432/notiving_test";
+		process.env.JWT_SECRET = process.env.JWT_SECRET || "test-secret-16chars";
+		process.env.JWT_REFRESH_SECRET =
+			process.env.JWT_REFRESH_SECRET || "test-refresh-secret-16chars";
+	}
+
 	const result = envSchema.safeParse(process.env);
 
 	if (!result.success) {
