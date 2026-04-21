@@ -6,6 +6,7 @@ const REFRESH_TOKEN_TTL = "7d";
 
 export interface TokenPayload {
 	sub: string;
+	version?: string;
 }
 
 export function signAccessToken(userId: string): string {
@@ -14,8 +15,11 @@ export function signAccessToken(userId: string): string {
 	});
 }
 
-export function signRefreshToken(userId: string): string {
-	return jwt.sign({ sub: userId }, env.JWT_REFRESH_SECRET, {
+export function signRefreshToken(
+	userId: string,
+	tokenVersion: string,
+): string {
+	return jwt.sign({ sub: userId, version: tokenVersion }, env.JWT_REFRESH_SECRET, {
 		expiresIn: REFRESH_TOKEN_TTL,
 	});
 }

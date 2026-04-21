@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { db } from "../../db/index.js";
+import { logger } from "../../lib/logger.js";
 
 export const healthRoute = new Hono();
 
@@ -13,6 +14,7 @@ healthRoute.get("/", async (c) => {
 		await db.execute("SELECT 1");
 		checks.database = "ok";
 	} catch (err) {
+		logger.error({ err }, "Database health check failed");
 		checks.database = "error";
 		checks.databaseError = err instanceof Error ? err.message : "Unknown error";
 	}

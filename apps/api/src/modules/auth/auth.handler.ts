@@ -65,7 +65,7 @@ export async function register(input: RegisterInput) {
 	}
 
 	const accessToken = signAccessToken(user.id);
-	const refreshToken = signRefreshToken(user.id);
+	const refreshToken = signRefreshToken(user.id, user.tokenVersion);
 
 	return { user: sanitizeUser(user), accessToken, refreshToken };
 }
@@ -87,7 +87,7 @@ export async function login(input: LoginInput) {
 	}
 
 	const accessToken = signAccessToken(user.id);
-	const refreshToken = signRefreshToken(user.id);
+	const refreshToken = signRefreshToken(user.id, user.tokenVersion);
 
 	return { user: sanitizeUser(user), accessToken, refreshToken };
 }
@@ -105,8 +105,22 @@ export async function refresh(refreshTokenStr: string) {
 		return null;
 	}
 
+	// Verify token version matches
+	if (payload.version !== user.tokenVersion) {
+		return null;
+	}
+
+	// Generate new token version for rotation
+	const newTokenVersion = crypto.randomUUID();
+
+	// Update token version in database
+	await db
+		.update(users)
+		.set({ tokenVersion: newTokenVersion, updatedAt: new Date() })
+		.where(eq(users.id, user.id));
+
 	const accessToken = signAccessToken(user.id);
-	const newRefreshToken = signRefreshToken(user.id);
+	const newRefreshToken = signRefreshToken(user.id, newTokenVersion);
 
 	return { accessToken, refreshToken: newRefreshToken };
 }

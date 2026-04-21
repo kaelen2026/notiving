@@ -1,6 +1,7 @@
 import type { ErrorHandler, NotFoundHandler } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { ApiResponse } from "../lib/api-response.js";
+import { logger } from "../lib/logger.js";
 
 export const errorHandler: ErrorHandler = (err, c) => {
 	const status = "status" in err ? (err.status as number) : 500;
@@ -8,7 +9,7 @@ export const errorHandler: ErrorHandler = (err, c) => {
 		status === 500 ? "Internal Server Error" : err.message || "Unknown error";
 
 	if (status === 500) {
-		console.error(err);
+		logger.error({ err, path: c.req.path, method: c.req.method }, "Server error");
 	}
 
 	return c.json<ApiResponse>(
