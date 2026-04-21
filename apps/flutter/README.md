@@ -1,11 +1,17 @@
-# notiving
+# Notiving Flutter
 
-A new Flutter module project.
+Flutter module for cross-platform embedding into native host apps.
+
+## Requirements
+
+- Flutter SDK (latest stable)
 
 ## Getting Started
 
-For help getting started with Flutter development, view the online
-[documentation](https://flutter.dev/).
+```bash
+flutter pub get      # Install dependencies
+flutter run          # Run on connected device
+flutter test         # Run tests
+```
 
-For instructions integrating Flutter modules to your existing applications,
-see the [add-to-app documentation](https://flutter.dev/to/add-to-app).
+For embedding into existing native apps, see the [add-to-app documentation](https://flutter.dev/to/add-to-app).
