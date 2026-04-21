@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.jsbundle
+*.bundle
+.metro-health-check*
+coverage/
+.DS_Store
+*.tsbuildinfo
+.turbo
