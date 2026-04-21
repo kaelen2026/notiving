@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
+import { env } from "./config/env.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import { rateLimiter } from "./middleware/rate-limit.js";
 import { authRoute } from "./modules/auth/auth.route.js";
@@ -10,18 +11,12 @@ import { healthRoute } from "./modules/health/health.route.js";
 import { postsRoute } from "./modules/posts/posts.route.js";
 import { usersRoute } from "./modules/users/users.route.js";
 
-const allowedOrigins = process.env.CORS_ORIGIN?.split(",").map((o) =>
-	o.trim(),
-);
-
 const app = new Hono();
 
 app.use(logger());
 app.use(
 	cors(
-		allowedOrigins && allowedOrigins.length > 0
-			? { origin: allowedOrigins }
-			: undefined,
+		env.CORS_ORIGIN.length > 0 ? { origin: env.CORS_ORIGIN } : undefined,
 	),
 );
 app.use(prettyJSON());
