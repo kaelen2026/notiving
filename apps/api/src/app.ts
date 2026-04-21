@@ -7,6 +7,7 @@ import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import { rateLimiter } from "./middleware/rate-limit.js";
 import { authRoute } from "./modules/auth/auth.route.js";
 import { commentsRoute } from "./modules/comments/comments.route.js";
+import { docsRoute } from "./modules/docs/docs.route.js";
 import { healthRoute } from "./modules/health/health.route.js";
 import { postsRoute } from "./modules/posts/posts.route.js";
 import { usersRoute } from "./modules/users/users.route.js";
@@ -23,6 +24,7 @@ app.onError(errorHandler);
 app.notFound(notFoundHandler);
 
 app.route("/health", healthRoute);
+app.route("/docs", docsRoute);
 app.use("/api/v1/auth/*", rateLimiter({ windowMs: 60_000, max: 10 }));
 app.route("/api/v1/auth", authRoute);
 app.route("/api/v1/users", usersRoute);
