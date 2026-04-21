@@ -48,7 +48,7 @@ postsRoute.put(
 
 		const existing = await handler.getPostById(id);
 		if (existing?.authorId !== userId) {
-			forbidden("You can only update your own posts");
+			return forbidden("You can only update your own posts");
 		}
 
 		const input = c.req.valid("json");
@@ -67,7 +67,7 @@ postsRoute.delete(
 
 		const existing = await handler.getPostById(id);
 		if (existing?.authorId !== userId) {
-			forbidden("You can only delete your own posts");
+			return forbidden("You can only delete your own posts");
 		}
 
 		await handler.deletePost(id);

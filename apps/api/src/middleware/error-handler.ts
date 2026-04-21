@@ -1,4 +1,5 @@
 import type { ErrorHandler, NotFoundHandler } from "hono";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { ApiResponse } from "../lib/api-response.js";
 
 export const errorHandler: ErrorHandler = (err, c) => {
@@ -12,7 +13,7 @@ export const errorHandler: ErrorHandler = (err, c) => {
 
 	return c.json<ApiResponse>(
 		{ success: false, error: message },
-		status as 400 | 401 | 403 | 404 | 409 | 500,
+		status as ContentfulStatusCode,
 	);
 };
 

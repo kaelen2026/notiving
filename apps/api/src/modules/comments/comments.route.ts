@@ -49,7 +49,7 @@ commentsRoute.put(
 
 		const existing = await handler.getCommentById(id);
 		if (existing?.authorId !== userId) {
-			forbidden("You can only update your own comments");
+			return forbidden("You can only update your own comments");
 		}
 
 		const input = c.req.valid("json");
@@ -68,7 +68,7 @@ commentsRoute.delete(
 
 		const existing = await handler.getCommentById(id);
 		if (existing?.authorId !== userId) {
-			forbidden("You can only delete your own comments");
+			return forbidden("You can only delete your own comments");
 		}
 
 		await handler.deleteComment(id);

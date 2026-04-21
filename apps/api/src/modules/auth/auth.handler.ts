@@ -38,15 +38,31 @@ export async function register(input: RegisterInput) {
 
 	const hashedPassword = await bcrypt.hash(input.password, 12);
 
-	const [user] = await db
-		.insert(users)
-		.values({
-			username: input.username,
-			email: input.email,
-			password: hashedPassword,
-			displayName: input.displayName,
-		})
-		.returning();
+	let user: typeof users.$inferSelect;
+	try {
+		const [inserted] = await db
+			.insert(users)
+			.values({
+				username: input.username,
+				email: input.email,
+				password: hashedPassword,
+				displayName: input.displayName,
+			})
+			.returning();
+		user = inserted;
+	} catch (err: unknown) {
+		const dbError = err as { code?: string; detail?: string };
+		if (dbError.code === "23505") {
+			if (dbError.detail?.includes("email")) {
+				return conflict("Email already registered");
+			}
+			if (dbError.detail?.includes("username")) {
+				return conflict("Username already taken");
+			}
+			return conflict("Duplicate entry");
+		}
+		throw err;
+	}
 
 	const accessToken = signAccessToken(user.id);
 	const refreshToken = signRefreshToken(user.id);

@@ -28,7 +28,7 @@ usersRoute.put(
 	async (c) => {
 		const { id } = c.req.valid("param");
 		const userId = c.get("userId");
-		if (id !== userId) forbidden("You can only update your own profile");
+		if (id !== userId) return forbidden("You can only update your own profile");
 
 		const input = c.req.valid("json");
 		const user = await handler.updateUser(id, input);
@@ -43,7 +43,7 @@ usersRoute.delete(
 	async (c) => {
 		const { id } = c.req.valid("param");
 		const userId = c.get("userId");
-		if (id !== userId) forbidden("You can only delete your own account");
+		if (id !== userId) return forbidden("You can only delete your own account");
 
 		await handler.deleteUser(id);
 		return ok(c, { deleted: true });

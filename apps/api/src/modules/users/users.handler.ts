@@ -8,7 +8,6 @@ import type { UpdateUserInput } from "./users.schema.js";
 const publicColumns = {
 	id: users.id,
 	username: users.username,
-	email: users.email,
 	displayName: users.displayName,
 	bio: users.bio,
 	avatarUrl: users.avatarUrl,

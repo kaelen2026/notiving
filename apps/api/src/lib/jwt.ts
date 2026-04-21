@@ -1,8 +1,16 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev-secret";
-const JWT_REFRESH_SECRET =
-	process.env.JWT_REFRESH_SECRET || "dev-refresh-secret";
+function requireEnv(name: string, devFallback: string): string {
+	const value = process.env[name];
+	if (value) return value;
+	if (process.env.NODE_ENV === "production") {
+		throw new Error(`${name} must be set in production`);
+	}
+	return devFallback;
+}
+
+const JWT_SECRET = requireEnv("JWT_SECRET", "dev-secret");
+const JWT_REFRESH_SECRET = requireEnv("JWT_REFRESH_SECRET", "dev-refresh-secret");
 
 const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL = "7d";

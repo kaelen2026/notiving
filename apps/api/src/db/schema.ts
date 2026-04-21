@@ -1,5 +1,6 @@
 import {
 	boolean,
+	foreignKey,
 	pgTable,
 	text,
 	timestamp,
@@ -32,16 +33,25 @@ export const posts = pgTable("posts", {
 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const comments = pgTable("comments", {
-	id: uuid().defaultRandom().primaryKey(),
-	content: text().notNull(),
-	postId: uuid("post_id")
-		.references(() => posts.id, { onDelete: "cascade" })
-		.notNull(),
-	authorId: uuid("author_id")
-		.references(() => users.id, { onDelete: "cascade" })
-		.notNull(),
-	parentId: uuid("parent_id"),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-	updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+export const comments = pgTable(
+	"comments",
+	{
+		id: uuid().defaultRandom().primaryKey(),
+		content: text().notNull(),
+		postId: uuid("post_id")
+			.references(() => posts.id, { onDelete: "cascade" })
+			.notNull(),
+		authorId: uuid("author_id")
+			.references(() => users.id, { onDelete: "cascade" })
+			.notNull(),
+		parentId: uuid("parent_id"),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at").defaultNow().notNull(),
+	},
+	(table) => [
+		foreignKey({
+			columns: [table.parentId],
+			foreignColumns: [table.id],
+		}).onDelete("cascade"),
+	],
+);
