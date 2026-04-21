@@ -1,9 +1,8 @@
 export {
-	registerSchema,
-	loginSchema,
-	refreshSchema,
-	type RegisterInput,
 	type LoginInput,
+	loginSchema,
 	type RefreshInput,
+	type RegisterInput,
+	refreshSchema,
+	registerSchema,
 } from "@notiving/shared/schemas";
-

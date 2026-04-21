@@ -15,9 +15,7 @@ const app = new Hono();
 
 app.use(logger());
 app.use(
-	cors(
-		env.CORS_ORIGIN.length > 0 ? { origin: env.CORS_ORIGIN } : undefined,
-	),
+	cors(env.CORS_ORIGIN.length > 0 ? { origin: env.CORS_ORIGIN } : undefined),
 );
 app.use(prettyJSON());
 
