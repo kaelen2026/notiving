@@ -33,6 +33,7 @@ usersRoute.put(
 
 		const input = c.req.valid("json");
 		const user = await handler.updateUser(id, input);
+		c.get("log").info({ targetUserId: id }, "user updated");
 		return ok(c, user);
 	},
 );
@@ -47,6 +48,7 @@ usersRoute.delete(
 		if (id !== userId) return forbidden("You can only delete your own account");
 
 		await handler.deleteUser(id);
+		c.get("log").info({ targetUserId: id }, "user deleted");
 		return ok(c, { deleted: true });
 	},
 );

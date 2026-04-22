@@ -35,6 +35,7 @@ commentsRoute.post(
 		const userId = c.get("userId");
 		const input = c.req.valid("json");
 		const comment = await handler.createComment(userId, input);
+		c.get("log").info({ commentId: comment.id }, "comment created");
 		return created(c, comment);
 	},
 );
@@ -55,6 +56,7 @@ commentsRoute.put(
 
 		const input = c.req.valid("json");
 		const comment = await handler.updateComment(id, input);
+		c.get("log").info({ commentId: id }, "comment updated");
 		return ok(c, comment);
 	},
 );
@@ -73,6 +75,7 @@ commentsRoute.delete(
 		}
 
 		await handler.deleteComment(id);
+		c.get("log").info({ commentId: id }, "comment deleted");
 		return ok(c, { deleted: true });
 	},
 );

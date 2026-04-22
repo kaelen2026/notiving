@@ -34,6 +34,7 @@ postsRoute.post(
 		const userId = c.get("userId");
 		const input = c.req.valid("json");
 		const post = await handler.createPost(userId, input);
+		c.get("log").info({ postId: post.id }, "post created");
 		return created(c, post);
 	},
 );
@@ -54,6 +55,7 @@ postsRoute.put(
 
 		const input = c.req.valid("json");
 		const post = await handler.updatePost(id, input);
+		c.get("log").info({ postId: id }, "post updated");
 		return ok(c, post);
 	},
 );
@@ -72,6 +74,7 @@ postsRoute.delete(
 		}
 
 		await handler.deletePost(id);
+		c.get("log").info({ postId: id }, "post deleted");
 		return ok(c, { deleted: true });
 	},
 );

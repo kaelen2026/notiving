@@ -25,6 +25,7 @@ function isWeb(c: { get: (key: "deviceType") => string }) {
 authRoute.post("/register", zValidator("json", registerSchema), async (c) => {
 	const input = c.req.valid("json");
 	const result = await handler.register(input);
+	c.get("log").info({ userId: result.user.id }, "user registered");
 
 	if (isWeb(c)) {
 		setCookie(
@@ -44,8 +45,11 @@ authRoute.post("/login", zValidator("json", loginSchema), async (c) => {
 	const input = c.req.valid("json");
 	const result = await handler.login(input);
 	if (!result) {
+		c.get("log").warn("login failed");
 		return fail(c, "Invalid email or password", 401);
 	}
+
+	c.get("log").info({ userId: result.user.id }, "user logged in");
 
 	if (isWeb(c)) {
 		setCookie(
@@ -107,6 +111,7 @@ authRoute.post("/refresh", async (c) => {
 authRoute.post("/logout", authGuard, async (c) => {
 	const userId = c.get("userId");
 	await handler.logout(userId);
+	c.get("log").info("user logged out");
 
 	if (isWeb(c)) {
 		deleteCookie(c, REFRESH_TOKEN_COOKIE, { path: "/api/v1/auth" });
