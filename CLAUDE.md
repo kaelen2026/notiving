@@ -83,6 +83,44 @@ These are enforced via `.claude/rules/coding.md`:
 - **Component files under 200 lines**; extract sub-components when exceeded
 - **Colocated test files** (`Component.test.tsx` next to `Component.tsx`)
 
+## Quality Gates
+
+See `.claude/rules/quality-gates.md` for full details. Before pushing:
+
+```bash
+pnpm turbo run lint test build  # simulate CI checks
+```
+
+**Merge blockers**: TypeScript errors, linter errors, test failures, build failures.
+
+## Task Decomposition
+
+All work must be organized as **vertical slices** - business features that deliver end-to-end user value.
+
+**Before starting any task:**
+
+1. Copy `.claude/templates/task-template.md` to plan your work
+2. Fill out **Input** (requirements, dependencies, constraints)
+3. Fill out **Output** (specific deliverables across all layers)
+4. Define minimum 3 **acceptance criteria** (specific, testable conditions)
+5. Get alignment on scope before coding
+
+**When creating a PR:**
+
+- Use `.github/pull_request_template.md` (auto-populated by GitHub)
+- Document how each acceptance criterion was verified
+- Include manual test steps for reviewers
+- Verify all task-level quality gates pass
+
+**Key principles:**
+
+- One task = one complete user capability (not a technical layer)
+- Spans all layers: database → API → frontend → tests → docs
+- Independently verifiable (can test end-to-end)
+- Reasonable size (1-3 days, 5-15 files)
+
+See `.claude/rules/task-decomposition.md` for detailed guidelines and examples.
+
 ## Git
 
 - **Conventional Commits** required (`feat:`, `fix:`, `chore:`, etc.) — enforced by commitlint + Husky pre-commit hook
