@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { prettyJSON } from "hono/pretty-json";
 import { env } from "./config/env.js";
+import { deviceDetect } from "./middleware/device.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import { rateLimiter } from "./middleware/rate-limit.js";
 import { authRoute } from "./modules/auth/auth.route.js";
@@ -16,9 +17,20 @@ const app = new Hono();
 
 app.use(logger());
 app.use(
-	cors(env.CORS_ORIGIN.length > 0 ? { origin: env.CORS_ORIGIN } : undefined),
+	cors({
+		origin: env.CORS_ORIGIN.length > 0 ? env.CORS_ORIGIN : "*",
+		allowHeaders: [
+			"Content-Type",
+			"Authorization",
+			"X-Device-Type",
+			"X-App-Version",
+			"X-Platform-Version",
+		],
+		credentials: true,
+	}),
 );
 app.use(prettyJSON());
+app.use(deviceDetect);
 
 app.onError(errorHandler);
 app.notFound(notFoundHandler);

@@ -40,14 +40,14 @@ export function formatZodError(error: ZodError) {
 		.join("; ");
 }
 
-export function notFound(message = "Resource not found") {
+export function notFound(message = "Resource not found"): never {
 	throw new HTTPException(404, { message });
 }
 
-export function forbidden(message = "Forbidden") {
+export function forbidden(message = "Forbidden"): never {
 	throw new HTTPException(403, { message });
 }
 
-export function conflict(message: string) {
+export function conflict(message: string): never {
 	throw new HTTPException(409, { message });
 }

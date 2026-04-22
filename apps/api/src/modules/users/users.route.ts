@@ -2,11 +2,12 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { forbidden, ok, paginated } from "../../lib/api-response.js";
 import { parsePagination } from "../../lib/pagination.js";
-import { type AuthEnv, authGuard } from "../../middleware/auth.js";
+import { authGuard } from "../../middleware/auth.js";
+import type { AppEnv } from "../../types/env.js";
 import * as handler from "./users.handler.js";
 import { updateUserSchema, userIdParam } from "./users.schema.js";
 
-export const usersRoute = new Hono<AuthEnv>();
+export const usersRoute = new Hono<AppEnv>();
 
 usersRoute.get("/", async (c) => {
 	const { cursor, limit } = parsePagination(c.req.query());

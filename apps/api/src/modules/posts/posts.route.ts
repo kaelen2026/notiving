@@ -2,7 +2,8 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { created, forbidden, ok, paginated } from "../../lib/api-response.js";
 import { parsePagination } from "../../lib/pagination.js";
-import { type AuthEnv, authGuard } from "../../middleware/auth.js";
+import { authGuard } from "../../middleware/auth.js";
+import type { AppEnv } from "../../types/env.js";
 import * as handler from "./posts.handler.js";
 import {
 	createPostSchema,
@@ -10,7 +11,7 @@ import {
 	updatePostSchema,
 } from "./posts.schema.js";
 
-export const postsRoute = new Hono<AuthEnv>();
+export const postsRoute = new Hono<AppEnv>();
 
 postsRoute.get("/", async (c) => {
 	const { cursor, limit } = parsePagination(c.req.query());

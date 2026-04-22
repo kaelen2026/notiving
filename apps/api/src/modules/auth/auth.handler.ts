@@ -125,6 +125,14 @@ export async function refresh(refreshTokenStr: string) {
 	return { accessToken, refreshToken: newRefreshToken };
 }
 
+export async function logout(userId: string) {
+	const newTokenVersion = crypto.randomUUID();
+	await db
+		.update(users)
+		.set({ tokenVersion: newTokenVersion, updatedAt: new Date() })
+		.where(eq(users.id, userId));
+}
+
 export async function getMe(userId: string) {
 	const [user] = await db
 		.select()

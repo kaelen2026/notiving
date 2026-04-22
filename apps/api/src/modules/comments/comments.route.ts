@@ -2,7 +2,8 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { created, forbidden, ok, paginated } from "../../lib/api-response.js";
 import { parsePagination } from "../../lib/pagination.js";
-import { type AuthEnv, authGuard } from "../../middleware/auth.js";
+import { authGuard } from "../../middleware/auth.js";
+import type { AppEnv } from "../../types/env.js";
 import * as handler from "./comments.handler.js";
 import {
 	commentIdParam,
@@ -10,7 +11,7 @@ import {
 	updateCommentSchema,
 } from "./comments.schema.js";
 
-export const commentsRoute = new Hono<AuthEnv>();
+export const commentsRoute = new Hono<AppEnv>();
 
 commentsRoute.get("/", async (c) => {
 	const { cursor, limit } = parsePagination(c.req.query());
