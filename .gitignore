@@ -4,3 +4,5 @@ dist
 .turbo
 xcuserdata/
 .env
+Pods/
+build/
