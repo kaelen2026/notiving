@@ -15,13 +15,14 @@ export function signAccessToken(userId: string): string {
 	});
 }
 
-export function signRefreshToken(
-	userId: string,
-	tokenVersion: string,
-): string {
-	return jwt.sign({ sub: userId, version: tokenVersion }, env.JWT_REFRESH_SECRET, {
-		expiresIn: REFRESH_TOKEN_TTL,
-	});
+export function signRefreshToken(userId: string, tokenVersion: string): string {
+	return jwt.sign(
+		{ sub: userId, version: tokenVersion },
+		env.JWT_REFRESH_SECRET,
+		{
+			expiresIn: REFRESH_TOKEN_TTL,
+		},
+	);
 }
 
 export function verifyAccessToken(token: string): TokenPayload {

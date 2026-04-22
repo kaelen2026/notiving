@@ -16,9 +16,7 @@ export const users = pgTable("users", {
 	displayName: varchar("display_name", { length: 64 }),
 	bio: text(),
 	avatarUrl: varchar("avatar_url", { length: 512 }),
-	tokenVersion: varchar("token_version", { length: 36 })
-		.notNull()
-		.default("0"),
+	tokenVersion: varchar("token_version", { length: 36 }).notNull().default("0"),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

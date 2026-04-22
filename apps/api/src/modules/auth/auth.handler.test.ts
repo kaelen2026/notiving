@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "../../db/index.js";
 import { users } from "../../db/schema.js";
 import * as authHandler from "./auth.handler.js";
@@ -90,9 +90,7 @@ describe("Auth Handler", () => {
 			expect(refreshResult).toBeTruthy();
 			expect(refreshResult?.accessToken).toBeTruthy();
 			expect(refreshResult?.refreshToken).toBeTruthy();
-			expect(refreshResult?.refreshToken).not.toBe(
-				registerResult.refreshToken,
-			);
+			expect(refreshResult?.refreshToken).not.toBe(registerResult.refreshToken);
 		});
 
 		it("should reject old refresh token after rotation", async () => {

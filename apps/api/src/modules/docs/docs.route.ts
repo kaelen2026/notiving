@@ -219,7 +219,10 @@ const openApiSpec = {
 								properties: {
 									title: { type: "string", maxLength: 256 },
 									content: { type: "string" },
-									slug: { type: "string", pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+									slug: {
+										type: "string",
+										pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+									},
 									published: { type: "boolean" },
 								},
 							},
