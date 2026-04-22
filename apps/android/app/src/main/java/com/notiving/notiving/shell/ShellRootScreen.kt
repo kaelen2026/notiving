@@ -13,10 +13,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.notiving.notiving.shell.router.ShellRouter
@@ -27,7 +25,7 @@ import java.util.Locale
 
 @Composable
 fun ShellRootScreen(router: ShellRouter) {
-    var selectedTab by rememberSaveable { mutableStateOf(router.config.tabs.first().key) }
+    val selectedTab by router.selectedTab.collectAsState()
 
     Scaffold(
         bottomBar = {
@@ -35,7 +33,7 @@ fun ShellRootScreen(router: ShellRouter) {
                 router.config.tabs.forEach { tab ->
                     NavigationBarItem(
                         selected = selectedTab == tab.key,
-                        onClick = { selectedTab = tab.key },
+                        onClick = { router.navigate(tab.route) },
                         icon = { Icon(iconForKey(tab.icon), contentDescription = tab.key) },
                         label = {
                             Text(tab.key.replaceFirstChar { it.titlecase(Locale.getDefault()) })

@@ -1,11 +1,10 @@
 import SwiftUI
 
 struct ShellRootView: View {
-    @StateObject private var router = ShellRouter()
-    @State private var selectedTab = "home"
+    @ObservedObject private var router = ShellRouter.shared
 
     var body: some View {
-        TabView(selection: $selectedTab) {
+        TabView(selection: $router.selectedTab) {
             ForEach(router.config.tabs) { tab in
                 NavigationStack {
                     tabContent(for: tab)

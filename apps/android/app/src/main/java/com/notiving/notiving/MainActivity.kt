@@ -12,7 +12,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val router = ShellRouter(this)
+        val router = ShellRouter.init(this)
         setContent {
             NotivingTheme {
                 ShellRootScreen(router)
