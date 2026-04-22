@@ -11,7 +11,7 @@ import SwiftUI
 struct notivingApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ShellRootView()
         }
     }
 }

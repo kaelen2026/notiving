@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "routes": [
+    { "pattern": "/", "runtime": "native", "screen": "HomeTab" },
+    { "pattern": "/explore", "runtime": "native", "screen": "ExploreTab" },
+    { "pattern": "/inbox", "runtime": "native", "screen": "InboxTab" },
+    { "pattern": "/profile", "runtime": "native", "screen": "ProfileTab" }
+  ],
+  "tabs": [
+    { "key": "home", "route": "/", "icon": "home" },
+    { "key": "explore", "route": "/explore", "icon": "compass" },
+    { "key": "inbox", "route": "/inbox", "icon": "bell" },
+    { "key": "profile", "route": "/profile", "icon": "user" }
+  ]
+}
