@@ -6,6 +6,7 @@ import { env } from "./config/env.js";
 import { deviceDetect } from "./middleware/device.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import { rateLimiter } from "./middleware/rate-limit.js";
+import { requestId } from "./middleware/request-id.js";
 import { authRoute } from "./modules/auth/auth.route.js";
 import { commentsRoute } from "./modules/comments/comments.route.js";
 import { docsRoute } from "./modules/docs/docs.route.js";
@@ -15,6 +16,7 @@ import { usersRoute } from "./modules/users/users.route.js";
 
 const app = new Hono();
 
+app.use(requestId);
 app.use(logger());
 app.use(
 	cors({
@@ -27,6 +29,7 @@ app.use(
 			"X-Platform-Version",
 		],
 		credentials: true,
+		exposeHeaders: ["X-Request-ID"],
 	}),
 );
 app.use(prettyJSON());
