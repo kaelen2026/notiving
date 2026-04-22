@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db } from "../../db/index.js";
-import { users } from "../../db/schema.js";
+import { accounts, users } from "../../db/schema.js";
 import { conflict } from "../../lib/api-response.js";
 import {
 	signAccessToken,
@@ -15,7 +15,7 @@ function sanitizeUser(user: typeof users.$inferSelect) {
 	return rest;
 }
 
-export async function register(input: RegisterInput) {
+export async function register(input: RegisterInput, anonymousUserId?: string) {
 	const existing = await db
 		.select({ id: users.id })
 		.from(users)
@@ -39,6 +39,35 @@ export async function register(input: RegisterInput) {
 	const hashedPassword = await bcrypt.hash(input.password, 12);
 
 	let user: typeof users.$inferSelect;
+
+	if (anonymousUserId) {
+		const [anon] = await db
+			.select()
+			.from(users)
+			.where(eq(users.id, anonymousUserId))
+			.limit(1);
+
+		if (anon?.isAnonymous) {
+			const [updated] = await db
+				.update(users)
+				.set({
+					username: input.username,
+					email: input.email,
+					password: hashedPassword,
+					displayName: input.displayName,
+					isAnonymous: false,
+					updatedAt: new Date(),
+				})
+				.where(eq(users.id, anonymousUserId))
+				.returning();
+			user = updated;
+
+			const accessToken = signAccessToken(user.id);
+			const refreshToken = signRefreshToken(user.id, user.tokenVersion);
+			return { user: sanitizeUser(user), accessToken, refreshToken };
+		}
+	}
+
 	try {
 		const [inserted] = await db
 			.insert(users)
@@ -78,6 +107,10 @@ export async function login(input: LoginInput) {
 		.limit(1);
 
 	if (!user) {
+		return null;
+	}
+
+	if (!user.password) {
 		return null;
 	}
 
@@ -141,5 +174,31 @@ export async function getMe(userId: string) {
 		.limit(1);
 
 	if (!user) return null;
-	return sanitizeUser(user);
+
+	const linkedAccounts = await db
+		.select({
+			provider: accounts.provider,
+			email: accounts.email,
+			linkedAt: accounts.createdAt,
+		})
+		.from(accounts)
+		.where(eq(accounts.userId, userId));
+
+	return {
+		...sanitizeUser(user),
+		hasPassword: user.password !== null,
+		providers: linkedAccounts,
+	};
+}
+
+export async function createAnonymousUser() {
+	const [user] = await db
+		.insert(users)
+		.values({ isAnonymous: true })
+		.returning();
+
+	const accessToken = signAccessToken(user.id);
+	const refreshToken = signRefreshToken(user.id, user.tokenVersion);
+
+	return { user: sanitizeUser(user), accessToken, refreshToken };
 }

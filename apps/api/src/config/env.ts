@@ -12,6 +12,13 @@ const envSchema = z.object({
 		.string()
 		.optional()
 		.transform((val) => val?.split(",").map((o) => o.trim()) ?? []),
+	GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+	GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+	APPLE_CLIENT_ID: z.string().min(1).optional(),
+	APPLE_TEAM_ID: z.string().min(1).optional(),
+	APPLE_KEY_ID: z.string().min(1).optional(),
+	APPLE_PRIVATE_KEY: z.string().min(1).optional(),
+	OAUTH_REDIRECT_BASE_URL: z.string().url().optional(),
 });
 
 function validateEnv() {

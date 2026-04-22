@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { created, fail, ok } from "../../lib/api-response.js";
-import { authGuard } from "../../middleware/auth.js";
+import { authGuard, tryExtractUserId } from "../../middleware/auth.js";
 import type { AppEnv } from "../../types/env.js";
 import * as handler from "./auth.handler.js";
 import { loginSchema, registerSchema } from "./auth.schema.js";
@@ -24,7 +24,9 @@ function isWeb(c: { get: (key: "deviceType") => string }) {
 
 authRoute.post("/register", zValidator("json", registerSchema), async (c) => {
 	const input = c.req.valid("json");
-	const result = await handler.register(input);
+	const anonymousUserId =
+		tryExtractUserId(c.req.header("Authorization")) ?? undefined;
+	const result = await handler.register(input, anonymousUserId);
 	c.get("log").info({ userId: result.user.id }, "user registered");
 
 	if (isWeb(c)) {

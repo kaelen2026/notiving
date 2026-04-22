@@ -13,12 +13,19 @@ export interface PaginatedResult<T> {
 
 export interface User {
 	id: string;
-	username: string;
+	username: string | null;
 	displayName: string | null;
 	bio: string | null;
 	avatarUrl: string | null;
+	isAnonymous: boolean;
 	createdAt: string;
 	updatedAt: string;
+	hasPassword?: boolean;
+	providers?: Array<{
+		provider: string;
+		email: string | null;
+		linkedAt: string;
+	}>;
 }
 
 export interface Post {
