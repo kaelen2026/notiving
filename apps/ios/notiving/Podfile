@@ -1,0 +1,38 @@
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+target 'notiving' do
+  use_react_native!(
+    :path => "../../../node_modules/react-native",
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+  )
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      "../../../node_modules/react-native",
+      :mac_catalyst_enabled => false,
+    )
+
+    # Append -lc++ to the app's pod xcconfig for ReactCodegen C++ symbols
+    Dir.glob(File.join(installer.sandbox.root, 'Target Support Files', 'Pods-notiving', '*.xcconfig')).each do |path|
+      content = File.read(path)
+      unless content.include?('-lc++')
+        content.gsub!(/^(OTHER_LDFLAGS\s*=.*)$/, '\1 -lc++')
+        File.write(path, content)
+      end
+    end
+    # Xcode 26: disable user script sandboxing for RN framework copy phases
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+      end
+    end
+  end
+end

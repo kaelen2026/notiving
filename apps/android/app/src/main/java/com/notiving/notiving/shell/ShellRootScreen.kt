@@ -20,6 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.notiving.notiving.shell.router.ShellRouter
+import com.notiving.notiving.shell.runtime.H5Container
+import com.notiving.notiving.shell.runtime.RNContainer
 import com.notiving.notiving.shell.screens.PlaceholderScreen
 import java.util.Locale
 
@@ -44,7 +46,28 @@ fun ShellRootScreen(router: ShellRouter) {
         },
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            PlaceholderScreen(tabKey = selectedTab)
+            val route = router.resolve(
+                router.config.tabs.first { it.key == selectedTab }.route
+            )
+            when (route?.runtime) {
+                "h5" -> {
+                    val url = route.url
+                    if (url != null) {
+                        H5Container(url = url)
+                    } else {
+                        PlaceholderScreen(tabKey = selectedTab)
+                    }
+                }
+                "rn" -> {
+                    val module = route.module
+                    if (module != null) {
+                        RNContainer(moduleName = module)
+                    } else {
+                        PlaceholderScreen(tabKey = selectedTab)
+                    }
+                }
+                else -> PlaceholderScreen(tabKey = selectedTab)
+            }
         }
     }
 }

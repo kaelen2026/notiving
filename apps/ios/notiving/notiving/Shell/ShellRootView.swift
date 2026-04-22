@@ -8,7 +8,7 @@ struct ShellRootView: View {
         TabView(selection: $selectedTab) {
             ForEach(router.config.tabs) { tab in
                 NavigationStack {
-                    PlaceholderScreen(tabKey: tab.key)
+                    tabContent(for: tab)
                         .navigationTitle(tab.key.capitalized)
                 }
                 .tabItem {
@@ -16,6 +16,27 @@ struct ShellRootView: View {
                 }
                 .tag(tab.key)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func tabContent(for tab: TabEntry) -> some View {
+        let route = router.resolve(tab.route)
+        switch route?.runtime {
+        case "h5":
+            if let urlString = route?.url, let url = URL(string: urlString) {
+                H5Container(url: url)
+            } else {
+                PlaceholderScreen(tabKey: tab.key)
+            }
+        case "rn":
+            if let module = route?.module {
+                RNContainer(moduleName: module)
+            } else {
+                PlaceholderScreen(tabKey: tab.key)
+            }
+        default:
+            PlaceholderScreen(tabKey: tab.key)
         }
     }
 

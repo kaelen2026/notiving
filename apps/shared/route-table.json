@@ -2,9 +2,9 @@
   "version": 1,
   "routes": [
     { "pattern": "/", "runtime": "native", "screen": "HomeTab" },
-    { "pattern": "/explore", "runtime": "native", "screen": "ExploreTab" },
+    { "pattern": "/explore", "runtime": "h5", "url": "http://localhost:5173/" },
     { "pattern": "/inbox", "runtime": "native", "screen": "InboxTab" },
-    { "pattern": "/profile", "runtime": "native", "screen": "ProfileTab" }
+    { "pattern": "/profile", "runtime": "rn", "module": "notiving" }
   ],
   "tabs": [
     { "key": "home", "route": "/", "icon": "home" },
