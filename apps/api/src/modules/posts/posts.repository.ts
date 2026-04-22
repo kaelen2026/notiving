@@ -1,9 +1,9 @@
 import { and, eq, gt } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import { posts } from "../../db/schema.js";
-import { notFound } from "../../lib/api-response.js";
-import { toPaginatedResult } from "../../lib/pagination.js";
-import type { CreatePostInput, UpdatePostInput } from "./posts.schema.js";
+
+type PostRow = typeof posts.$inferSelect;
+type NewPost = typeof posts.$inferInsert;
 
 export async function listPosts(
 	cursor: string | undefined,
@@ -15,48 +15,40 @@ export async function listPosts(
 	if (authorId) conditions.push(eq(posts.authorId, authorId));
 	conditions.push(eq(posts.published, true));
 
-	const rows = await db
+	return db
 		.select()
 		.from(posts)
 		.where(and(...conditions))
 		.limit(limit + 1)
 		.orderBy(posts.id);
-
-	return toPaginatedResult(rows, limit);
 }
 
-export async function getPostById(id: string) {
+export async function findPostById(id: string): Promise<PostRow | null> {
 	const [post] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+	return post ?? null;
+}
 
-	if (!post) notFound("Post not found");
+export async function insertPost(values: NewPost): Promise<PostRow> {
+	const [post] = await db.insert(posts).values(values).returning();
 	return post;
 }
 
-export async function createPost(authorId: string, input: CreatePostInput) {
-	const [post] = await db
-		.insert(posts)
-		.values({ ...input, authorId })
-		.returning();
-
-	return post;
-}
-
-export async function updatePost(id: string, input: UpdatePostInput) {
+export async function updatePost(
+	id: string,
+	values: Record<string, unknown>,
+): Promise<PostRow | null> {
 	const [post] = await db
 		.update(posts)
-		.set({ ...input, updatedAt: new Date() })
+		.set({ ...values, updatedAt: new Date() })
 		.where(eq(posts.id, id))
 		.returning();
-
-	if (!post) notFound("Post not found");
-	return post;
+	return post ?? null;
 }
 
-export async function deletePost(id: string) {
+export async function deletePost(id: string): Promise<{ id: string } | null> {
 	const [post] = await db
 		.delete(posts)
 		.where(eq(posts.id, id))
 		.returning({ id: posts.id });
-
-	if (!post) notFound("Post not found");
+	return post ?? null;
 }

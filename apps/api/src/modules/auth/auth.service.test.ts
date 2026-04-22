@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "../../db/index.js";
-import { users } from "../../db/schema.js";
-import * as authHandler from "./auth.handler.js";
+import { accounts, users } from "../../db/schema.js";
+import * as authService from "./auth.service.js";
 
-describe("Auth Handler", () => {
+describe("Auth Service", () => {
 	beforeEach(async () => {
-		// Clean up test data
+		await db.delete(accounts);
 		await db.delete(users);
 	});
 
 	describe("register", () => {
 		it("should create a new user with token version", async () => {
-			const result = await authHandler.register({
+			const result = await authService.register({
 				username: "testuser",
 				email: "test@example.com",
 				password: "password123",
@@ -24,14 +24,14 @@ describe("Auth Handler", () => {
 		});
 
 		it("should reject duplicate email", async () => {
-			await authHandler.register({
+			await authService.register({
 				username: "user1",
 				email: "test@example.com",
 				password: "password123",
 			});
 
 			await expect(
-				authHandler.register({
+				authService.register({
 					username: "user2",
 					email: "test@example.com",
 					password: "password123",
@@ -42,13 +42,13 @@ describe("Auth Handler", () => {
 
 	describe("login", () => {
 		it("should login with correct credentials", async () => {
-			await authHandler.register({
+			await authService.register({
 				username: "testuser",
 				email: "test@example.com",
 				password: "password123",
 			});
 
-			const result = await authHandler.login({
+			const result = await authService.login({
 				email: "test@example.com",
 				password: "password123",
 			});
@@ -60,13 +60,13 @@ describe("Auth Handler", () => {
 		});
 
 		it("should reject wrong password", async () => {
-			await authHandler.register({
+			await authService.register({
 				username: "testuser",
 				email: "test@example.com",
 				password: "password123",
 			});
 
-			const result = await authHandler.login({
+			const result = await authService.login({
 				email: "test@example.com",
 				password: "wrongpassword",
 			});
@@ -77,13 +77,13 @@ describe("Auth Handler", () => {
 
 	describe("refresh token rotation", () => {
 		it("should rotate token version on refresh", async () => {
-			const registerResult = await authHandler.register({
+			const registerResult = await authService.register({
 				username: "testuser",
 				email: "test@example.com",
 				password: "password123",
 			});
 
-			const refreshResult = await authHandler.refresh(
+			const refreshResult = await authService.refresh(
 				registerResult.refreshToken,
 			);
 
@@ -94,7 +94,7 @@ describe("Auth Handler", () => {
 		});
 
 		it("should reject old refresh token after rotation", async () => {
-			const registerResult = await authHandler.register({
+			const registerResult = await authService.register({
 				username: "testuser",
 				email: "test@example.com",
 				password: "password123",
@@ -103,10 +103,10 @@ describe("Auth Handler", () => {
 			const oldRefreshToken = registerResult.refreshToken;
 
 			// First refresh - should work
-			await authHandler.refresh(oldRefreshToken);
+			await authService.refresh(oldRefreshToken);
 
 			// Second refresh with old token - should fail
-			const result = await authHandler.refresh(oldRefreshToken);
+			const result = await authService.refresh(oldRefreshToken);
 			expect(result).toBeNull();
 		});
 	});

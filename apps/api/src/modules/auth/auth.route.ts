@@ -4,8 +4,8 @@ import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { created, fail, ok } from "../../lib/api-response.js";
 import { authGuard, tryExtractUserId } from "../../middleware/auth.js";
 import type { AppEnv } from "../../types/env.js";
-import * as handler from "./auth.handler.js";
 import { loginSchema, registerSchema } from "./auth.schema.js";
+import * as authService from "./auth.service.js";
 
 const REFRESH_TOKEN_COOKIE = "refresh_token";
 const REFRESH_COOKIE_OPTIONS = {
@@ -26,7 +26,7 @@ authRoute.post("/register", zValidator("json", registerSchema), async (c) => {
 	const input = c.req.valid("json");
 	const anonymousUserId =
 		tryExtractUserId(c.req.header("Authorization")) ?? undefined;
-	const result = await handler.register(input, anonymousUserId);
+	const result = await authService.register(input, anonymousUserId);
 	c.get("log").info({ userId: result.user.id }, "user registered");
 
 	if (isWeb(c)) {
@@ -45,7 +45,7 @@ authRoute.post("/register", zValidator("json", registerSchema), async (c) => {
 
 authRoute.post("/login", zValidator("json", loginSchema), async (c) => {
 	const input = c.req.valid("json");
-	const result = await handler.login(input);
+	const result = await authService.login(input);
 	if (!result) {
 		c.get("log").warn("login failed");
 		return fail(c, "Invalid email or password", 401);
@@ -82,7 +82,7 @@ authRoute.post("/refresh", async (c) => {
 	}
 
 	try {
-		const result = await handler.refresh(refreshToken);
+		const result = await authService.refresh(refreshToken);
 		if (!result) {
 			if (isWeb(c)) {
 				deleteCookie(c, REFRESH_TOKEN_COOKIE, { path: "/api/v1/auth" });
@@ -112,7 +112,7 @@ authRoute.post("/refresh", async (c) => {
 
 authRoute.post("/logout", authGuard, async (c) => {
 	const userId = c.get("userId");
-	await handler.logout(userId);
+	await authService.logout(userId);
 	c.get("log").info("user logged out");
 
 	if (isWeb(c)) {
@@ -124,7 +124,7 @@ authRoute.post("/logout", authGuard, async (c) => {
 
 authRoute.get("/me", authGuard, async (c) => {
 	const userId = c.get("userId");
-	const user = await handler.getMe(userId);
+	const user = await authService.getMe(userId);
 	if (!user) {
 		return fail(c, "User not found", 404);
 	}

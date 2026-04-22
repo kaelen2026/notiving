@@ -1,10 +1,8 @@
-import { eq } from "drizzle-orm";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import type { Logger } from "pino";
-import { db } from "../db/index.js";
-import { users } from "../db/schema.js";
 import { verifyAccessToken } from "../lib/jwt.js";
+import { findUserIsAnonymous } from "../modules/auth/auth.repository.js";
 
 export type AuthEnv = {
 	Variables: {
@@ -42,11 +40,7 @@ export function tryExtractUserId(header: string | undefined): string | null {
 
 export const registeredGuard = createMiddleware<Env>(async (c, next) => {
 	const userId = c.get("userId");
-	const [user] = await db
-		.select({ isAnonymous: users.isAnonymous })
-		.from(users)
-		.where(eq(users.id, userId))
-		.limit(1);
+	const user = await findUserIsAnonymous(userId);
 
 	if (!user || user.isAnonymous) {
 		throw new HTTPException(403, { message: "Registration required" });

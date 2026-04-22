@@ -1,12 +1,9 @@
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import { comments } from "../../db/schema.js";
-import { notFound } from "../../lib/api-response.js";
-import { toPaginatedResult } from "../../lib/pagination.js";
-import type {
-	CreateCommentInput,
-	UpdateCommentInput,
-} from "./comments.schema.js";
+
+type CommentRow = typeof comments.$inferSelect;
+type NewComment = typeof comments.$inferInsert;
 
 export async function listComments(
 	cursor: string | undefined,
@@ -23,55 +20,46 @@ export async function listComments(
 		conditions.push(eq(comments.parentId, parentId));
 	}
 
-	const rows = await db
+	return db
 		.select()
 		.from(comments)
 		.where(conditions.length > 0 ? and(...conditions) : undefined)
 		.limit(limit + 1)
 		.orderBy(comments.id);
-
-	return toPaginatedResult(rows, limit);
 }
 
-export async function getCommentById(id: string) {
+export async function findCommentById(id: string): Promise<CommentRow | null> {
 	const [comment] = await db
 		.select()
 		.from(comments)
 		.where(eq(comments.id, id))
 		.limit(1);
+	return comment ?? null;
+}
 
-	if (!comment) notFound("Comment not found");
+export async function insertComment(values: NewComment): Promise<CommentRow> {
+	const [comment] = await db.insert(comments).values(values).returning();
 	return comment;
 }
 
-export async function createComment(
-	authorId: string,
-	input: CreateCommentInput,
-) {
-	const [comment] = await db
-		.insert(comments)
-		.values({ ...input, authorId })
-		.returning();
-
-	return comment;
-}
-
-export async function updateComment(id: string, input: UpdateCommentInput) {
+export async function updateComment(
+	id: string,
+	values: Record<string, unknown>,
+): Promise<CommentRow | null> {
 	const [comment] = await db
 		.update(comments)
-		.set({ ...input, updatedAt: new Date() })
+		.set({ ...values, updatedAt: new Date() })
 		.where(eq(comments.id, id))
 		.returning();
-
-	if (!comment) notFound("Comment not found");
-	return comment;
+	return comment ?? null;
 }
 
-export async function deleteComment(id: string) {
+export async function deleteComment(
+	id: string,
+): Promise<{ id: string } | null> {
 	const [comment] = await db
 		.delete(comments)
 		.where(eq(comments.id, id))
 		.returning({ id: comments.id });
-
-	if (!comment) notFound("Comment not found");
+	return comment ?? null;
 }

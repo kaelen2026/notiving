@@ -16,13 +16,13 @@ import { isOAuthProvider } from "../../lib/oauth/providers.js";
 import { consumeOAuthState, createOAuthState } from "../../lib/oauth/state.js";
 import { authGuard, tryExtractUserId } from "../../middleware/auth.js";
 import type { AppEnv } from "../../types/env.js";
-import * as handler from "./auth.handler.js";
-import * as oauthHandler from "./oauth.handler.js";
+import * as authService from "./auth.service.js";
 import {
 	linkPasswordBody,
 	oauthInitiateQuery,
 	oauthTokenBody,
 } from "./oauth.schema.js";
+import * as oauthService from "./oauth.service.js";
 
 const REFRESH_TOKEN_COOKIE = "refresh_token";
 const REFRESH_COOKIE_OPTIONS = {
@@ -40,7 +40,7 @@ function isWeb(c: { get: (key: "deviceType") => string }) {
 }
 
 oauthRoute.post("/anonymous", async (c) => {
-	const result = await handler.createAnonymousUser();
+	const result = await authService.createAnonymousUser();
 	c.get("log").info({ userId: result.user.id }, "anonymous user created");
 
 	if (isWeb(c)) {
@@ -129,7 +129,7 @@ oauthRoute.get("/oauth/:provider/callback", async (c) => {
 		profile = await handleAppleCallback(code);
 	}
 
-	const result = await oauthHandler.handleOAuthUser(profile, anonymousUserId);
+	const result = await oauthService.handleOAuthUser(profile, anonymousUserId);
 	c.get("log").info({ userId: result.user.id, provider }, "oauth login");
 
 	if (stored.deviceType === "web") {
@@ -200,7 +200,7 @@ oauthRoute.post("/oauth/:provider/callback", async (c) => {
 		profile = await handleGoogleCallback(code, stored.codeVerifier!);
 	}
 
-	const result = await oauthHandler.handleOAuthUser(profile, anonymousUserId);
+	const result = await oauthService.handleOAuthUser(profile, anonymousUserId);
 	c.get("log").info(
 		{ userId: result.user.id, provider },
 		"oauth login (POST callback)",
@@ -258,7 +258,7 @@ oauthRoute.post(
 			);
 		}
 
-		const result = await oauthHandler.handleOAuthUser(profile, anonymousUserId);
+		const result = await oauthService.handleOAuthUser(profile, anonymousUserId);
 		c.get("log").info(
 			{ userId: result.user.id, provider },
 			"oauth token exchange",
@@ -287,7 +287,7 @@ oauthRoute.post(
 		const userId = c.get("userId");
 		const { password } = c.req.valid("json");
 
-		const result = await oauthHandler.linkPassword(userId, password);
+		const result = await oauthService.linkPassword(userId, password);
 		if (!result) {
 			return fail(c, "User not found", 404);
 		}

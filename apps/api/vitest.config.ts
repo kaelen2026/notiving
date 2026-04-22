@@ -5,6 +5,9 @@ export default defineConfig({
 		globals: true,
 		environment: "node",
 		setupFiles: ["./src/test/setup.ts"],
+		exclude: ["node_modules", "dist"],
+		pool: "forks",
+		poolOptions: { forks: { singleFork: true } },
 		coverage: {
 			provider: "v8",
 			reporter: ["text", "json", "html"],
