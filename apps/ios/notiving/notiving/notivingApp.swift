@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 struct notivingApp: App {
-    private var settings = SettingsManager.shared
+    @State private var settings = SettingsManager.shared
 
     var body: some Scene {
         WindowGroup {
