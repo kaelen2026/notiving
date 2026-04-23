@@ -24,6 +24,14 @@ class ShellRouter(context: Context) {
         // Tab-level: no-op for now. Push navigation in Phase 4.
     }
 
+    fun setTitle(title: String) {
+        // Phase 4: update native nav bar title
+    }
+
+    fun setNavBarHidden(hidden: Boolean) {
+        // Phase 4: show/hide native nav bar
+    }
+
     companion object {
         var instance: ShellRouter? = null
             private set

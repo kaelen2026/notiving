@@ -14,11 +14,16 @@ private const val BRIDGE_JS = """
     if (window.NotivingBridge) return;
     var callbackId = 0;
     var callbacks = {};
+    var listeners = {};
     window.__notivingBridgeCallback = function(id, result) {
         if (callbacks[id]) {
             callbacks[id](result);
             delete callbacks[id];
         }
+    };
+    window.__notivingBridgeEmit = function(eventName, data) {
+        var cbs = listeners[eventName] || [];
+        for (var i = 0; i < cbs.length; i++) { cbs[i](data); }
     };
     function call(method, params) {
         return new Promise(function(resolve) {
@@ -27,12 +32,30 @@ private const val BRIDGE_JS = """
             window.__shellBridge.call(method, id, JSON.stringify(params || {}));
         });
     }
+    function on(eventName, cb) {
+        if (!listeners[eventName]) listeners[eventName] = [];
+        listeners[eventName].push(cb);
+        return function() {
+            listeners[eventName] = listeners[eventName].filter(function(f) { return f !== cb; });
+        };
+    }
     window.NotivingBridge = {
         getToken: function() { return call('getToken'); },
         getUserId: function() { return call('getUserId'); },
+        onSessionChange: function(cb) { return on('onSessionChange', cb); },
         navigate: function(url, opts) { return call('navigate', { url: url }); },
         back: function() { return call('back'); },
+        setTitle: function(title) { return call('setTitle', { title: title }); },
+        setNavBarHidden: function(hidden) { return call('setNavBarHidden', { hidden: hidden }); },
+        track: function(event, params) { return call('track', { event: event, params: params }); },
+        pageView: function(pageName) { return call('pageView', { pageName: pageName }); },
+        requestPermission: function(type) { return call('requestPermission', { type: type }); },
+        checkPermission: function(type) { return call('checkPermission', { type: type }); },
+        onResume: function(cb) { return on('onResume', cb); },
+        onPause: function(cb) { return on('onPause', cb); },
         ready: function() { return call('ready'); },
+        getDeviceInfo: function() { return call('getDeviceInfo'); },
+        getAppVersion: function() { return call('getAppVersion'); },
         isInShell: true
     };
 })();

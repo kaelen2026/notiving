@@ -1,17 +1,13 @@
-//
-//  notivingApp.swift
-//  notiving
-//
-//  Created by sam on 2026/4/21.
-//
-
 import SwiftUI
 
 @main
 struct notivingApp: App {
+    private var settings = SettingsManager.shared
+
     var body: some Scene {
         WindowGroup {
             ShellRootView()
+                .preferredColorScheme(settings.appearanceMode.colorScheme)
         }
     }
 }

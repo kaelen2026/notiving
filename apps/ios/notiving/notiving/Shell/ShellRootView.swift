@@ -22,6 +22,8 @@ struct ShellRootView: View {
     private func tabContent(for tab: TabEntry) -> some View {
         let route = router.resolve(tab.route)
         switch route?.runtime {
+        case "native":
+            nativeScreen(for: route?.screen, tabKey: tab.key)
         case "h5":
             if let urlString = route?.url, let url = URL(string: urlString) {
                 H5Container(url: url)
@@ -36,6 +38,16 @@ struct ShellRootView: View {
             }
         default:
             PlaceholderScreen(tabKey: tab.key)
+        }
+    }
+
+    @ViewBuilder
+    private func nativeScreen(for screen: String?, tabKey: String) -> some View {
+        switch screen {
+        case "ProfileTab":
+            ProfileScreen()
+        default:
+            PlaceholderScreen(tabKey: tabKey)
         }
     }
 

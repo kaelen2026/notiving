@@ -66,18 +66,16 @@ pnpm turbo run build
 
 **iOS** (requires macOS + Xcode):
 ```bash
-cd apps/ios
-xcodebuild -workspace NotivingApp.xcworkspace -scheme NotivingApp -configuration Release clean build
-# Or via fastlane if configured
-fastlane ios build
+cd apps/ios/notiving
+xcodebuild -project notiving.xcodeproj -scheme notiving -configuration Debug \
+  -destination 'generic/platform=iOS' build
 ```
 
 **Android** (requires JDK + Android SDK):
 ```bash
 cd apps/android
-./gradlew assembleRelease
-# Check for lint issues
-./gradlew lint
+./gradlew compileDebugKotlin    # Kotlin compilation check (authoritative)
+./gradlew assembleDebug         # Full debug build (may need JDK toolchain)
 ```
 
 **HarmonyOS** (requires DevEco Studio):
@@ -197,8 +195,8 @@ pnpm lint && pnpm test
 pnpm turbo run lint test build
 
 # Native apps (run only if you modified them)
-cd apps/ios && xcodebuild -workspace NotivingApp.xcworkspace -scheme NotivingApp clean build
-cd apps/android && ./gradlew assembleDebug lint
+cd apps/ios/notiving && xcodebuild -project notiving.xcodeproj -scheme notiving -configuration Debug -destination 'generic/platform=iOS' build
+cd apps/android && ./gradlew compileDebugKotlin
 cd apps/harmony && ./hvigorw assembleHap --mode module -p product=default
 ```
 

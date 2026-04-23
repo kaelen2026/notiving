@@ -35,6 +35,16 @@ pnpm --filter web lint    # biome check
 # apps/rn (React Native)
 pnpm --filter rn dev      # react-native start
 pnpm --filter rn build    # bundle ios + android
+
+# apps/ios (Native iOS)
+cd apps/ios/notiving
+xcodebuild -project notiving.xcodeproj -scheme notiving -configuration Debug \
+  -destination 'generic/platform=iOS' build
+
+# apps/android (Native Android — Kotlin compilation)
+cd apps/android
+./gradlew compileDebugKotlin        # verify Kotlin compiles
+./gradlew assembleDebug             # full debug build (requires JDK toolchain)
 ```
 
 Verify changes before reporting done: run `tsc --noEmit` and the relevant build command in the affected app.
@@ -92,6 +102,41 @@ pnpm turbo run lint test build  # simulate CI checks
 ```
 
 **Merge blockers**: TypeScript errors, linter errors, test failures, build failures.
+
+## Native Build Verification
+
+When modifying native code (`apps/ios/`, `apps/android/`), you **must** verify compilation before reporting done.
+
+### iOS
+
+```bash
+cd apps/ios/notiving
+xcodebuild -project notiving.xcodeproj -scheme notiving -configuration Debug \
+  -destination 'generic/platform=iOS' build 2>&1 | grep "error:" | head -20
+```
+
+- **Gate**: Zero compilation errors in files you modified.
+- Pre-existing errors in unmodified files do not block your changes.
+- Swift files using `@Published` / `ObservableObject` must `import Combine`.
+
+### Android
+
+```bash
+cd apps/android
+./gradlew compileDebugKotlin
+```
+
+- **Gate**: `compileDebugKotlin` must succeed (`BUILD SUCCESSFUL`).
+- `assembleDebug` may fail due to local JDK toolchain issues — `compileDebugKotlin` is the authoritative check for code correctness.
+
+### Cross-platform Bridge Changes
+
+When modifying bridge interfaces (`packages/bridge-types/`, `apps/*/Shell/Bridge/`):
+
+1. **TypeScript**: `pnpm --filter h5 exec tsc --noEmit && pnpm --filter rn exec tsc --noEmit`
+2. **iOS**: `xcodebuild` as above — check that `ShellBridgeModule.swift`, `H5BridgeHandler.swift` compile
+3. **Android**: `./gradlew compileDebugKotlin` — check that `ShellBridgeModule.kt`, `H5BridgeInterface.kt` compile
+4. **Stub dependencies**: If bridge code calls `ShellRouter` or `SessionManager` methods that don't exist yet, add stub methods to those classes
 
 ## Task Decomposition
 

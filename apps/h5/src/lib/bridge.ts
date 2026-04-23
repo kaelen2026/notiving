@@ -1,4 +1,4 @@
-import type { ShellBridge } from "@notiving/bridge-types";
+import type { ShellBridge, Session } from "@notiving/bridge-types";
 
 declare global {
   interface Window {
@@ -13,13 +13,32 @@ function isInShell(): boolean {
 const fallbackBridge: ShellBridge = {
   getToken: () => Promise.resolve(localStorage.getItem("access_token")),
   getUserId: () => Promise.resolve(localStorage.getItem("user_id")),
+  onSessionChange: () => () => {},
   navigate: (url) => {
     window.location.href = url;
   },
   back: () => {
     window.history.back();
   },
+  setTitle: (title) => {
+    document.title = title;
+  },
+  setNavBarHidden: () => {},
+  track: () => {},
+  pageView: () => {},
+  requestPermission: () => Promise.resolve({ status: "denied" }),
+  checkPermission: () => Promise.resolve({ status: "denied" }),
+  onResume: () => () => {},
+  onPause: () => () => {},
   ready: () => {},
+  getDeviceInfo: () =>
+    Promise.resolve({
+      platform: "ios" as const,
+      osVersion: "",
+      appVersion: "",
+      deviceId: "",
+    }),
+  getAppVersion: () => Promise.resolve(""),
 };
 
 export const bridge: ShellBridge = isInShell()

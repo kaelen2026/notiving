@@ -25,4 +25,12 @@ final class ShellRouter: ObservableObject {
     func back() {
         // Tab-level: no-op for now. Push navigation in Phase 4.
     }
+
+    func setTitle(_ title: String) {
+        // Phase 4: update native nav bar title
+    }
+
+    func setNavBarHidden(_ hidden: Bool) {
+        // Phase 4: show/hide native nav bar
+    }
 }
