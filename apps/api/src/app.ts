@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { prettyJSON } from "hono/pretty-json";
-import { env } from "./config/env.js";
+import { getEnv, initEnv } from "./config/env.js";
 import { deviceDetect } from "./middleware/device.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import { rateLimiter } from "./middleware/rate-limit.js";
@@ -14,38 +14,49 @@ import { docsRoute } from "./modules/docs/docs.route.js";
 import { healthRoute } from "./modules/health/health.route.js";
 import { postsRoute } from "./modules/posts/posts.route.js";
 import { usersRoute } from "./modules/users/users.route.js";
+import type { AppEnv } from "./types/env.js";
 
-const app = new Hono();
+export default function createApp() {
+	const app = new Hono<AppEnv>();
 
-app.use(requestId);
-app.use(requestLogger);
-app.use(
-	cors({
-		origin: env.CORS_ORIGIN.length > 0 ? env.CORS_ORIGIN : "*",
-		allowHeaders: [
-			"Content-Type",
-			"Authorization",
-			"X-Device-Type",
-			"X-App-Version",
-			"X-Platform-Version",
-		],
-		credentials: true,
-		exposeHeaders: ["X-Request-ID"],
-	}),
-);
-app.use(prettyJSON());
-app.use(deviceDetect);
+	// Seed env from Workers bindings (no-ops if already initialized by Node entry)
+	app.use(async (c, next) => {
+		initEnv(c.env);
+		await next();
+	});
 
-app.onError(errorHandler);
-app.notFound(notFoundHandler);
+	app.use(requestId);
+	app.use(requestLogger);
+	app.use(async (c, next) => {
+		const env = getEnv();
+		const mw = cors({
+			origin: env.CORS_ORIGIN.length > 0 ? env.CORS_ORIGIN : "*",
+			allowHeaders: [
+				"Content-Type",
+				"Authorization",
+				"X-Device-Type",
+				"X-App-Version",
+				"X-Platform-Version",
+			],
+			credentials: true,
+			exposeHeaders: ["X-Request-ID"],
+		});
+		return mw(c, next);
+	});
+	app.use(prettyJSON());
+	app.use(deviceDetect);
 
-app.route("/health", healthRoute);
-app.route("/docs", docsRoute);
-app.use("/api/v1/auth/*", rateLimiter({ windowMs: 60_000, max: 10 }));
-app.route("/api/v1/auth", authRoute);
-app.route("/api/v1/auth", oauthRoute);
-app.route("/api/v1/users", usersRoute);
-app.route("/api/v1/posts", postsRoute);
-app.route("/api/v1/comments", commentsRoute);
+	app.onError(errorHandler);
+	app.notFound(notFoundHandler);
 
-export default app;
+	app.route("/health", healthRoute);
+	app.route("/docs", docsRoute);
+	app.use("/api/v1/auth/*", rateLimiter({ windowMs: 60_000, max: 10 }));
+	app.route("/api/v1/auth", authRoute);
+	app.route("/api/v1/auth", oauthRoute);
+	app.route("/api/v1/users", usersRoute);
+	app.route("/api/v1/posts", postsRoute);
+	app.route("/api/v1/comments", commentsRoute);
+
+	return app;
+}

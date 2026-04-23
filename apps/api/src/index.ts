@@ -1,10 +1,13 @@
 import "dotenv/config";
 import { serve } from "@hono/node-server";
-import app from "./app.js";
-import { env } from "./config/env.js";
+import { getEnv, initEnv } from "./config/env.js";
 import { logger } from "./lib/logger.js";
 
-const port = env.PORT;
+initEnv(process.env);
+
+const { default: createApp } = await import("./app.js");
+const app = createApp();
+const port = getEnv().PORT;
 
 logger.info({ port }, "Server starting");
 

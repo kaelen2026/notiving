@@ -1,11 +1,12 @@
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
-import { db } from "../../db/index.js";
+import { getDb } from "../../db/index.js";
 import { accounts, emailVerificationCodes, users } from "../../db/schema.js";
 import * as authService from "./auth.service.js";
 
 describe("Auth Service", () => {
 	beforeEach(async () => {
+		const db = getDb();
 		await db.delete(emailVerificationCodes);
 		await db.delete(accounts);
 		await db.delete(users);
@@ -135,7 +136,7 @@ describe("Auth Service", () => {
 
 			await authService.sendEmailCode("existing@example.com");
 
-			const [codeRecord] = await db
+			const [codeRecord] = await getDb()
 				.select()
 				.from(emailVerificationCodes)
 				.where(
@@ -160,7 +161,7 @@ describe("Auth Service", () => {
 		it("should verify code and auto-register new user", async () => {
 			await authService.sendEmailCode("newuser@example.com");
 
-			const [codeRecord] = await db
+			const [codeRecord] = await getDb()
 				.select()
 				.from(emailVerificationCodes)
 				.where(

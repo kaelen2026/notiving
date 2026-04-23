@@ -1,5 +1,5 @@
 import { eq, gt } from "drizzle-orm";
-import { db } from "../../db/index.js";
+import { getDb } from "../../db/index.js";
 import { users } from "../../db/schema.js";
 
 const publicColumns = {
@@ -16,7 +16,7 @@ export type PublicUser = typeof publicColumns;
 
 export async function listUsers(cursor: string | undefined, limit: number) {
 	const condition = cursor ? gt(users.id, cursor) : undefined;
-	return db
+	return getDb()
 		.select(publicColumns)
 		.from(users)
 		.where(condition)
@@ -25,7 +25,7 @@ export async function listUsers(cursor: string | undefined, limit: number) {
 }
 
 export async function findUserById(id: string) {
-	const [user] = await db
+	const [user] = await getDb()
 		.select(publicColumns)
 		.from(users)
 		.where(eq(users.id, id))
@@ -34,7 +34,7 @@ export async function findUserById(id: string) {
 }
 
 export async function updateUser(id: string, values: Record<string, unknown>) {
-	const [user] = await db
+	const [user] = await getDb()
 		.update(users)
 		.set({ ...values, updatedAt: new Date() })
 		.where(eq(users.id, id))
@@ -43,7 +43,7 @@ export async function updateUser(id: string, values: Record<string, unknown>) {
 }
 
 export async function deleteUser(id: string) {
-	const [user] = await db
+	const [user] = await getDb()
 		.delete(users)
 		.where(eq(users.id, id))
 		.returning({ id: users.id });

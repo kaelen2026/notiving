@@ -1,0 +1,11 @@
+name = "notiving-api"
+main = "src/worker.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+[[routes]]
+pattern = "api.notiving.com/*"
+zone_name = "notiving.com"

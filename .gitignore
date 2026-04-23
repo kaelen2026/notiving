@@ -7,3 +7,4 @@ xcuserdata/
 Pods/
 build/
 apps/android/.idea/
+.vercel

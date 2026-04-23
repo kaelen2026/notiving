@@ -1,5 +1,5 @@
 import { and, eq, gt } from "drizzle-orm";
-import { db } from "../../db/index.js";
+import { getDb } from "../../db/index.js";
 import { posts } from "../../db/schema.js";
 
 type PostRow = typeof posts.$inferSelect;
@@ -15,7 +15,7 @@ export async function listPosts(
 	if (authorId) conditions.push(eq(posts.authorId, authorId));
 	conditions.push(eq(posts.published, true));
 
-	return db
+	return getDb()
 		.select()
 		.from(posts)
 		.where(and(...conditions))
@@ -24,12 +24,12 @@ export async function listPosts(
 }
 
 export async function findPostById(id: string): Promise<PostRow | null> {
-	const [post] = await db.select().from(posts).where(eq(posts.id, id)).limit(1);
+	const [post] = await getDb().select().from(posts).where(eq(posts.id, id)).limit(1);
 	return post ?? null;
 }
 
 export async function insertPost(values: NewPost): Promise<PostRow> {
-	const [post] = await db.insert(posts).values(values).returning();
+	const [post] = await getDb().insert(posts).values(values).returning();
 	return post;
 }
 
@@ -37,7 +37,7 @@ export async function updatePost(
 	id: string,
 	values: Record<string, unknown>,
 ): Promise<PostRow | null> {
-	const [post] = await db
+	const [post] = await getDb()
 		.update(posts)
 		.set({ ...values, updatedAt: new Date() })
 		.where(eq(posts.id, id))
@@ -46,7 +46,7 @@ export async function updatePost(
 }
 
 export async function deletePost(id: string): Promise<{ id: string } | null> {
-	const [post] = await db
+	const [post] = await getDb()
 		.delete(posts)
 		.where(eq(posts.id, id))
 		.returning({ id: posts.id });

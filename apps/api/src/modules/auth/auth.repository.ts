@@ -1,12 +1,12 @@
 import { and, desc, eq, gt, sql } from "drizzle-orm";
-import { db } from "../../db/index.js";
+import { getDb } from "../../db/index.js";
 import { accounts, emailVerificationCodes, users } from "../../db/schema.js";
 
 type UserRow = typeof users.$inferSelect;
 type NewUser = typeof users.$inferInsert;
 
 export async function findUserByEmail(email: string): Promise<UserRow | null> {
-	const [user] = await db
+	const [user] = await getDb()
 		.select()
 		.from(users)
 		.where(eq(users.email, email))
@@ -17,7 +17,7 @@ export async function findUserByEmail(email: string): Promise<UserRow | null> {
 export async function findUserByUsername(
 	username: string,
 ): Promise<{ id: string } | null> {
-	const [user] = await db
+	const [user] = await getDb()
 		.select({ id: users.id })
 		.from(users)
 		.where(eq(users.username, username))
@@ -26,14 +26,14 @@ export async function findUserByUsername(
 }
 
 export async function findUserById(id: string): Promise<UserRow | null> {
-	const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+	const [user] = await getDb().select().from(users).where(eq(users.id, id)).limit(1);
 	return user ?? null;
 }
 
 export async function findUserIsAnonymous(
 	id: string,
 ): Promise<{ isAnonymous: boolean } | null> {
-	const [user] = await db
+	const [user] = await getDb()
 		.select({ isAnonymous: users.isAnonymous })
 		.from(users)
 		.where(eq(users.id, id))
@@ -44,7 +44,7 @@ export async function findUserIsAnonymous(
 export async function findUserPassword(
 	id: string,
 ): Promise<{ password: string | null } | null> {
-	const [user] = await db
+	const [user] = await getDb()
 		.select({ password: users.password })
 		.from(users)
 		.where(eq(users.id, id))
@@ -53,7 +53,7 @@ export async function findUserPassword(
 }
 
 export async function insertUser(values: NewUser): Promise<UserRow> {
-	const [user] = await db.insert(users).values(values).returning();
+	const [user] = await getDb().insert(users).values(values).returning();
 	return user;
 }
 
@@ -61,7 +61,7 @@ export async function updateUser(
 	id: string,
 	values: Partial<Omit<UserRow, "id" | "createdAt">>,
 ): Promise<UserRow> {
-	const [user] = await db
+	const [user] = await getDb()
 		.update(users)
 		.set({ ...values, updatedAt: new Date() })
 		.where(eq(users.id, id))
@@ -70,7 +70,7 @@ export async function updateUser(
 }
 
 export async function findAccountsByUserId(userId: string) {
-	return db
+	return getDb()
 		.select({
 			provider: accounts.provider,
 			email: accounts.email,
@@ -85,7 +85,7 @@ export async function insertEmailCode(
 	code: string,
 	expiresAt: Date,
 ) {
-	const [row] = await db
+	const [row] = await getDb()
 		.insert(emailVerificationCodes)
 		.values({ email, code, expiresAt })
 		.returning();
@@ -93,7 +93,7 @@ export async function insertEmailCode(
 }
 
 export async function findLatestValidCode(email: string) {
-	const [row] = await db
+	const [row] = await getDb()
 		.select()
 		.from(emailVerificationCodes)
 		.where(
@@ -109,7 +109,7 @@ export async function findLatestValidCode(email: string) {
 }
 
 export async function incrementCodeAttempts(id: string) {
-	await db
+	await getDb()
 		.update(emailVerificationCodes)
 		.set({
 			attempts: sql`${emailVerificationCodes.attempts} + 1`,
@@ -118,14 +118,14 @@ export async function incrementCodeAttempts(id: string) {
 }
 
 export async function markCodeUsed(id: string) {
-	await db
+	await getDb()
 		.update(emailVerificationCodes)
 		.set({ used: true })
 		.where(eq(emailVerificationCodes.id, id));
 }
 
 export async function findRecentCode(email: string, since: Date) {
-	const [row] = await db
+	const [row] = await getDb()
 		.select()
 		.from(emailVerificationCodes)
 		.where(

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { db } from "../../db/index.js";
+import { getDb } from "../../db/index.js";
 import type { AppEnv } from "../../types/env.js";
 
 export const healthRoute = new Hono<AppEnv>();
@@ -11,7 +11,7 @@ healthRoute.get("/", async (c) => {
 
 	// Check database connection
 	try {
-		await db.execute("SELECT 1");
+		await getDb().execute("SELECT 1");
 		checks.database = "ok";
 	} catch (err) {
 		c.get("log").error({ err }, "Database health check failed");

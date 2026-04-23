@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { db } from "../../db/index.js";
+import { getDb } from "../../db/index.js";
 import { accounts } from "../../db/schema.js";
 
 type AccountRow = typeof accounts.$inferSelect;
@@ -9,7 +9,7 @@ export async function findAccountByProvider(
 	provider: string,
 	providerUserId: string,
 ): Promise<AccountRow | null> {
-	const [account] = await db
+	const [account] = await getDb()
 		.select()
 		.from(accounts)
 		.where(
@@ -23,7 +23,7 @@ export async function findAccountByProvider(
 }
 
 export async function insertAccount(values: NewAccount): Promise<AccountRow> {
-	const [account] = await db.insert(accounts).values(values).returning();
+	const [account] = await getDb().insert(accounts).values(values).returning();
 	return account;
 }
 
@@ -35,14 +35,14 @@ export async function updateAccountTokens(
 		expiresAt: Date | null;
 	},
 ) {
-	await db
+	await getDb()
 		.update(accounts)
 		.set({ ...tokens, updatedAt: new Date() })
 		.where(eq(accounts.id, id));
 }
 
 export async function findAccountsByUserId(userId: string) {
-	return db
+	return getDb()
 		.select({
 			provider: accounts.provider,
 			email: accounts.email,

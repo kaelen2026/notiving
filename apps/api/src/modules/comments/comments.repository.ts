@@ -1,5 +1,5 @@
 import { and, eq, gt, isNull } from "drizzle-orm";
-import { db } from "../../db/index.js";
+import { getDb } from "../../db/index.js";
 import { comments } from "../../db/schema.js";
 
 type CommentRow = typeof comments.$inferSelect;
@@ -20,6 +20,7 @@ export async function listComments(
 		conditions.push(eq(comments.parentId, parentId));
 	}
 
+	const db = getDb();
 	return db
 		.select()
 		.from(comments)
@@ -29,6 +30,7 @@ export async function listComments(
 }
 
 export async function findCommentById(id: string): Promise<CommentRow | null> {
+	const db = getDb();
 	const [comment] = await db
 		.select()
 		.from(comments)
@@ -38,7 +40,7 @@ export async function findCommentById(id: string): Promise<CommentRow | null> {
 }
 
 export async function insertComment(values: NewComment): Promise<CommentRow> {
-	const [comment] = await db.insert(comments).values(values).returning();
+	const [comment] = await getDb().insert(comments).values(values).returning();
 	return comment;
 }
 
@@ -46,7 +48,7 @@ export async function updateComment(
 	id: string,
 	values: Record<string, unknown>,
 ): Promise<CommentRow | null> {
-	const [comment] = await db
+	const [comment] = await getDb()
 		.update(comments)
 		.set({ ...values, updatedAt: new Date() })
 		.where(eq(comments.id, id))
@@ -57,7 +59,7 @@ export async function updateComment(
 export async function deleteComment(
 	id: string,
 ): Promise<{ id: string } | null> {
-	const [comment] = await db
+	const [comment] = await getDb()
 		.delete(comments)
 		.where(eq(comments.id, id))
 		.returning({ id: comments.id });

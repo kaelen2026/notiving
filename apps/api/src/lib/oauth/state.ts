@@ -1,5 +1,5 @@
 import { eq, lt } from "drizzle-orm";
-import { db } from "../../db/index.js";
+import { getDb } from "../../db/index.js";
 import { oauthStates } from "../../db/schema.js";
 
 const STATE_TTL_MS = 10 * 60 * 1000;
@@ -20,7 +20,7 @@ export async function createOAuthState(params: {
 	const state = randomHex(32);
 	const expiresAt = new Date(Date.now() + STATE_TTL_MS);
 
-	await db.insert(oauthStates).values({
+	await getDb().insert(oauthStates).values({
 		state,
 		provider: params.provider,
 		deviceType: params.deviceType,
@@ -34,7 +34,7 @@ export async function createOAuthState(params: {
 }
 
 export async function consumeOAuthState(state: string) {
-	const rows = await db
+	const rows = await getDb()
 		.delete(oauthStates)
 		.where(eq(oauthStates.state, state))
 		.returning();
@@ -47,5 +47,5 @@ export async function consumeOAuthState(state: string) {
 }
 
 export async function cleanExpiredStates() {
-	await db.delete(oauthStates).where(lt(oauthStates.expiresAt, new Date()));
+	await getDb().delete(oauthStates).where(lt(oauthStates.expiresAt, new Date()));
 }
