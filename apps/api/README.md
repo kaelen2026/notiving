@@ -57,23 +57,34 @@ pnpm db:studio    # Open Drizzle Studio
 
 ## Tech Stack
 
-- **Runtime**: Node.js 20+
+- **Runtime**: Node.js 24 / Cloudflare Workers (dual entry)
 - **Framework**: Hono
-- **Database**: PostgreSQL + Drizzle ORM
+- **Database**: Neon PostgreSQL + Drizzle ORM
 - **Validation**: Zod
-- **Auth**: JWT (bcrypt)
+- **Auth**: JWT (jose) + bcrypt + Google/Apple OAuth (arctic)
 - **Testing**: Vitest
 - **Linting**: Biome
 - **Docs**: Scalar (OpenAPI 3.1)
 
+## Deploy
+
+Cloudflare Workers at `api.notiving.com`:
+
+```bash
+pnpm deploy    # wrangler deploy
+```
+
 ## Security Features
 
-- JWT-based authentication
+- JWT-based authentication with refresh token rotation
 - Password hashing with bcrypt (cost factor 12)
+- Google + Apple OAuth with CSRF protection (state + PKCE)
+- Email OTP verification with rate limiting and attempt tracking
 - CORS whitelist configuration
 - Rate limiting on auth endpoints (10 req/min)
 - Input validation with Zod schemas
 - SQL injection protection via Drizzle ORM
+- Device-aware auth (httpOnly cookies for web, tokens for native)
 
 ## License
 
