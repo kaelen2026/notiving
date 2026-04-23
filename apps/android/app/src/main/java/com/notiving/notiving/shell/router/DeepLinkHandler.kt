@@ -13,7 +13,7 @@ object DeepLinkHandler {
         val path = when (uri.scheme) {
             "notiving" -> "/${uri.host.orEmpty()}${uri.path.orEmpty()}"
             "https", "http" -> {
-                if (uri.host != "notiving.app") return
+                if (uri.host != "notiving.com") return
                 uri.path?.ifEmpty { "/" } ?: "/"
             }
             else -> return

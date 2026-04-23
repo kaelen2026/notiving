@@ -5,8 +5,8 @@
 | 类型 | 格式 | 用途 |
 |------|------|------|
 | Custom Scheme | `notiving://` | App 内跳转、OAuth 回调 |
-| Universal Link (iOS) | `https://notiving.app/` | 分享链接、SEO、免确认跳转 |
-| App Link (Android) | `https://notiving.app/` | 同上 |
+| Universal Link (iOS) | `https://notiving.com/` | 分享链接、SEO、免确认跳转 |
+| App Link (Android) | `https://notiving.com/` | 同上 |
 
 两套并行：Custom Scheme 保证 app 已安装时 100% 唤起；Universal/App Link 支持未安装时 fallback 到 Web。
 
@@ -25,7 +25,7 @@ notiving://login               → 登录页
 notiving://oauth/callback?...  → OAuth 回调
 ```
 
-Universal Link 同理，前缀换成 `https://notiving.app/`。
+Universal Link 同理，前缀换成 `https://notiving.com/`。
 
 ## 3. 各端实现
 
@@ -33,18 +33,18 @@ Universal Link 同理，前缀换成 `https://notiving.app/`。
 
 - `notivingApp.swift` 添加 `onOpenURL` modifier，解析 URL 后调用 `ShellRouter.shared.navigate(path)`
 - Info.plist 注册 `CFBundleURLSchemes: ["notiving"]`
-- Associated Domains 添加 `applinks:notiving.app`
+- Associated Domains 添加 `applinks:notiving.com`
 
 ### Android
 
 - `AndroidManifest.xml` 给 `MainActivity` 添加两组 intent-filter：
   - Custom Scheme: `android:scheme="notiving"`
-  - App Link: `android:scheme="https" android:host="notiving.app"` + `autoVerify="true"`
+  - App Link: `android:scheme="https" android:host="notiving.com"` + `autoVerify="true"`
 - `MainActivity.onCreate` / `onNewIntent` 解析 intent data 后调用 `ShellRouter.navigate()`
 
 ### Web
 
-- Next.js 路由天然匹配，`https://notiving.app/post/123` 直接渲染对应页面
+- Next.js 路由天然匹配，`https://notiving.com/post/123` 直接渲染对应页面
 - 部署 `/.well-known/apple-app-site-association` 和 `/.well-known/assetlinks.json`
 
 ### H5
@@ -65,7 +65,7 @@ notiving://explore?tab=trending&q=music   → query params 透传给 H5
 ## 5. Fallback 策略
 
 ```
-用户点击 https://notiving.app/post/123
+用户点击 https://notiving.com/post/123
   ├─ App 已安装 → Universal/App Link 直接打开 App
   └─ App 未安装 → 打开 Web 页面（Next.js 渲染）
        └─ Web 页面顶部 Smart Banner 引导安装
@@ -76,7 +76,7 @@ notiving://explore?tab=trending&q=music   → query params 透传给 H5
 API 的 OAuth callback 已支持 `redirect_uri`，设为：
 
 - iOS/Android: `notiving://oauth/callback`
-- Web: `https://notiving.app/oauth/callback`
+- Web: `https://notiving.com/oauth/callback`
 
 ## 7. 验证方法
 
@@ -93,7 +93,7 @@ xcrun simctl openurl booted "notiving://profile"
 xcrun simctl openurl booted "notiving://oauth/callback?token=test_token_123"
 
 # Universal Link
-xcrun simctl openurl booted "https://notiving.app/explore"
+xcrun simctl openurl booted "https://notiving.com/explore"
 ```
 
 ### Android 模拟器 / 真机
@@ -109,7 +109,7 @@ adb shell am start -a android.intent.action.VIEW -d "notiving://profile"
 adb shell am start -a android.intent.action.VIEW -d "notiving://oauth/callback?token=test_token_123"
 
 # App Link
-adb shell am start -a android.intent.action.VIEW -d "https://notiving.app/explore"
+adb shell am start -a android.intent.action.VIEW -d "https://notiving.com/explore"
 ```
 
 ### 验证清单
@@ -120,7 +120,7 @@ adb shell am start -a android.intent.action.VIEW -d "https://notiving.app/explor
 | `notiving://explore` | 切换到 Explore | ☐ | ☐ |
 | `notiving://profile` | 切换到 ProfileTab | ☐ | ☐ |
 | `notiving://oauth/callback?token=xxx` | token 存入 Session，跳转 profile | ☐ | ☐ |
-| `https://notiving.app/home` | 同 custom scheme 行为 | ☐ | ☐ |
+| `https://notiving.com/home` | 同 custom scheme 行为 | ☐ | ☐ |
 | 冷启动 deeplink | App 未运行时点击链接，启动后直达目标页 | ☐ | ☐ |
 | 热启动 deeplink | App 在后台时点击链接，回到前台并跳转 | ☐ | ☐ |
 | 无效路径 `notiving://unknown` | 不崩溃，静默忽略 | ☐ | ☐ |
@@ -142,11 +142,12 @@ adb shell am start -a android.intent.action.VIEW -d "https://notiving.app/explor
 - [x] Android: `DeepLinkHandler.kt` 解析 URI 并路由
 - [x] Android: `MainActivity.kt` 添加 `onNewIntent` 处理
 
-### P1 — 待实现
+### P1 — 已完成 ✅
 
-- [ ] 部署 `/.well-known/apple-app-site-association`（iOS Universal Link）
-- [ ] 部署 `/.well-known/assetlinks.json`（Android App Link）
-- [ ] iOS: 添加 Associated Domains entitlement (`applinks:notiving.app`)
+- [x] 部署 `/.well-known/apple-app-site-association`（iOS Universal Link）
+- [x] 部署 `/.well-known/assetlinks.json`（Android App Link，debug 指纹，上线前替换 release）
+- [x] iOS: 添加 Associated Domains entitlement (`applinks:notiving.com`)
+- [x] `next.config.ts` 添加 AASA Content-Type header
 
 ### P2 — 待实现
 

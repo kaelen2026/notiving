@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.notiving.notiving",
+      "sha256_cert_fingerprints": [
+        "4E:96:E0:59:F0:59:92:FA:B2:04:72:3E:51:54:68:03:51:7D:F4:28:6B:B3:0A:68:C5:00:DF:B0:67:D6:8C:48"
+      ]
+    }
+  }
+]

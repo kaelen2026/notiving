@@ -7,7 +7,7 @@ struct DeepLinkHandler {
         let path: String
         if url.scheme == "notiving" {
             path = "/\(url.host ?? "")\(url.path)"
-        } else if url.host == "notiving.app" {
+        } else if url.host == "notiving.com" {
             path = url.path.isEmpty ? "/" : url.path
         } else {
             return
