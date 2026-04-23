@@ -1,4 +1,4 @@
-import type { ShellBridge, Session } from "@notiving/bridge-types";
+import type { ShellBridge } from "@notiving/bridge-types";
 
 declare global {
   interface Window {

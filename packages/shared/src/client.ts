@@ -37,9 +37,9 @@ export class ApiClient {
 		path: string,
 		options: RequestInit = {},
 	): Promise<ApiResponse<T>> {
-		const headers: HeadersInit = {
+		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
-			...options.headers,
+			...(options.headers as Record<string, string>),
 		};
 
 		if (this.accessToken) {
