@@ -21,6 +21,14 @@ struct DeepLinkHandler {
             return
         }
 
+        if path.hasPrefix("/posts/") {
+            router.selectedTab = "explore"
+            if let h5URL = URL(string: "\(AppEnvironment.h5BaseURL)\(path)") {
+                router.push(.h5(url: h5URL))
+            }
+            return
+        }
+
         router.navigate(to: path)
     }
 }

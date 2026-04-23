@@ -2,7 +2,7 @@
   "version": 1,
   "routes": [
     { "pattern": "/", "runtime": "native", "screen": "HomeTab" },
-    { "pattern": "/explore", "runtime": "h5", "url": "http://localhost:5173/" },
+    { "pattern": "/explore", "runtime": "native", "screen": "ExploreTab" },
     { "pattern": "/inbox", "runtime": "native", "screen": "InboxTab" },
     { "pattern": "/profile", "runtime": "native", "screen": "ProfileTab" }
   ],

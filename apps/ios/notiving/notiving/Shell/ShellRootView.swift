@@ -6,9 +6,15 @@ struct ShellRootView: View {
     var body: some View {
         TabView(selection: $router.selectedTab) {
             ForEach(router.config.tabs) { tab in
-                NavigationStack {
+                NavigationStack(path: router.navigationPathBinding(for: tab.key)) {
                     tabContent(for: tab)
                         .navigationTitle(tab.key.capitalized)
+                        .navigationDestination(for: ShellRoute.self) { route in
+                            switch route {
+                            case .h5(let url):
+                                H5Container(url: url)
+                            }
+                        }
                 }
                 .tabItem {
                     Label(tab.key.capitalized, systemImage: sfSymbol(for: tab.icon))
@@ -44,6 +50,8 @@ struct ShellRootView: View {
     @ViewBuilder
     private func nativeScreen(for screen: String?, tabKey: String) -> some View {
         switch screen {
+        case "ExploreTab":
+            ExploreScreen()
         case "ProfileTab":
             ProfileScreen()
         default:

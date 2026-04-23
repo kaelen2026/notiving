@@ -3,6 +3,7 @@ import OpenInAppBanner from "./components/OpenInAppBanner";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Login from "./pages/Login";
+import PostDetail from "./pages/PostDetail";
 import NotFound from "./pages/NotFound";
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/about" element={<About />} />
+          <Route path="/posts/:id" element={<PostDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
