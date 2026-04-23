@@ -1,10 +1,12 @@
+import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "../../db/index.js";
-import { accounts, users } from "../../db/schema.js";
+import { accounts, emailVerificationCodes, users } from "../../db/schema.js";
 import * as authService from "./auth.service.js";
 
 describe("Auth Service", () => {
 	beforeEach(async () => {
+		await db.delete(emailVerificationCodes);
 		await db.delete(accounts);
 		await db.delete(users);
 	});
@@ -108,6 +110,108 @@ describe("Auth Service", () => {
 			// Second refresh with old token - should fail
 			const result = await authService.refresh(oldRefreshToken);
 			expect(result).toBeNull();
+		});
+	});
+
+	describe("Email OTP", () => {
+		it("should send verification code successfully", async () => {
+			const result = await authService.sendEmailCode("otp@example.com");
+			expect(result.message).toBe("Verification code sent");
+		});
+
+		it("should reject sending code within 60 seconds", async () => {
+			await authService.sendEmailCode("otp@example.com");
+			await expect(
+				authService.sendEmailCode("otp@example.com"),
+			).rejects.toThrow("Please wait before requesting another code");
+		});
+
+		it("should verify code and login existing user", async () => {
+			await authService.register({
+				username: "existinguser",
+				email: "existing@example.com",
+				password: "password123",
+			});
+
+			await authService.sendEmailCode("existing@example.com");
+
+			const [codeRecord] = await db
+				.select()
+				.from(emailVerificationCodes)
+				.where(
+					eq(
+						emailVerificationCodes.email,
+						"existing@example.com",
+					),
+				)
+				.limit(1);
+
+			const result = await authService.verifyEmailCode({
+				email: "existing@example.com",
+				code: codeRecord.code,
+			});
+
+			expect(result).toBeTruthy();
+			expect(result?.user.email).toBe("existing@example.com");
+			expect(result?.accessToken).toBeTruthy();
+			expect(result?.refreshToken).toBeTruthy();
+		});
+
+		it("should verify code and auto-register new user", async () => {
+			await authService.sendEmailCode("newuser@example.com");
+
+			const [codeRecord] = await db
+				.select()
+				.from(emailVerificationCodes)
+				.where(
+					eq(
+						emailVerificationCodes.email,
+						"newuser@example.com",
+					),
+				)
+				.limit(1);
+
+			const result = await authService.verifyEmailCode({
+				email: "newuser@example.com",
+				code: codeRecord.code,
+			});
+
+			expect(result).toBeTruthy();
+			expect(result?.user.email).toBe("newuser@example.com");
+			expect(result?.user.username).toMatch(/^user_/);
+			expect(result?.accessToken).toBeTruthy();
+			expect(result?.refreshToken).toBeTruthy();
+		});
+
+		it("should reject invalid code and increment attempts", async () => {
+			await authService.sendEmailCode("otp@example.com");
+
+			await expect(
+				authService.verifyEmailCode({
+					email: "otp@example.com",
+					code: "000000",
+				}),
+			).rejects.toThrow("Invalid verification code");
+		});
+
+		it("should reject after 5 failed attempts", async () => {
+			await authService.sendEmailCode("otp@example.com");
+
+			for (let i = 0; i < 5; i++) {
+				await authService
+					.verifyEmailCode({
+						email: "otp@example.com",
+						code: "000000",
+					})
+					.catch(() => {});
+			}
+
+			await expect(
+				authService.verifyEmailCode({
+					email: "otp@example.com",
+					code: "000000",
+				}),
+			).rejects.toThrow("Too many attempts, please request a new code");
 		});
 	});
 });

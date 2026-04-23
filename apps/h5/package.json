@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@notiving/bridge-types": "workspace:*",
+    "@notiving/design-tokens": "workspace:^",
     "@notiving/shared": "workspace:^",
     "@tanstack/react-query": "^5.99.2",
     "react": "^19.2.5",

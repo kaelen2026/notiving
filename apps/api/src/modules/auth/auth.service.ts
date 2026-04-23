@@ -1,12 +1,18 @@
 import bcrypt from "bcryptjs";
+import { HTTPException } from "hono/http-exception";
 import { conflict } from "../../lib/api-response.js";
+import { sendEmail } from "../../lib/email.js";
 import {
 	signAccessToken,
 	signRefreshToken,
 	verifyRefreshToken,
 } from "../../lib/jwt.js";
 import * as repo from "./auth.repository.js";
-import type { LoginInput, RegisterInput } from "./auth.schema.js";
+import type {
+	LoginInput,
+	RegisterInput,
+	VerifyEmailCodeInput,
+} from "./auth.schema.js";
 
 type UserRow = Awaited<ReturnType<typeof repo.findUserById>> & {};
 
@@ -115,5 +121,79 @@ export async function getMe(userId: string) {
 
 export async function createAnonymousUser() {
 	const user = await repo.insertUser({ isAnonymous: true });
+	return { user: sanitizeUser(user), ...issueTokens(user) };
+}
+
+export async function sendEmailCode(email: string) {
+	const recent = await repo.findRecentCode(
+		email,
+		new Date(Date.now() - 60_000),
+	);
+	if (recent) {
+		throw new HTTPException(429, {
+			message: "Please wait before requesting another code",
+		});
+	}
+
+	const code = String(
+		crypto.getRandomValues(new Uint32Array(1))[0] % 1000000,
+	).padStart(6, "0");
+	const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+	await repo.insertEmailCode(email, code, expiresAt);
+	await sendEmail(
+		email,
+		"Your verification code",
+		`Your verification code is: ${code}`,
+	);
+
+	return { message: "Verification code sent" };
+}
+
+export async function verifyEmailCode(
+	input: VerifyEmailCodeInput,
+	anonymousUserId?: string,
+) {
+	const record = await repo.findLatestValidCode(input.email);
+	if (!record) return null;
+
+	if (record.attempts >= 5) {
+		await repo.markCodeUsed(record.id);
+		throw new HTTPException(400, {
+			message: "Too many attempts, please request a new code",
+		});
+	}
+
+	if (record.code !== input.code) {
+		await repo.incrementCodeAttempts(record.id);
+		throw new HTTPException(400, {
+			message: "Invalid verification code",
+		});
+	}
+
+	await repo.markCodeUsed(record.id);
+
+	const existingUser = await repo.findUserByEmail(input.email);
+	if (existingUser) {
+		return { user: sanitizeUser(existingUser), ...issueTokens(existingUser) };
+	}
+
+	if (anonymousUserId) {
+		const anon = await repo.findUserById(anonymousUserId);
+		if (anon?.isAnonymous) {
+			const user = await repo.updateUser(anonymousUserId, {
+				email: input.email,
+				username: `user_${Math.random().toString(36).slice(2, 10)}`,
+				isAnonymous: false,
+			});
+			return { user: sanitizeUser(user), ...issueTokens(user) };
+		}
+	}
+
+	const user = await repo.insertUser({
+		email: input.email,
+		username: `user_${Math.random().toString(36).slice(2, 10)}`,
+		isAnonymous: false,
+	});
 	return { user: sanitizeUser(user), ...issueTokens(user) };
 }

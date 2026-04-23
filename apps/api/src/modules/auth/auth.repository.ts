@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq, gt, sql } from "drizzle-orm";
 import { db } from "../../db/index.js";
-import { accounts, users } from "../../db/schema.js";
+import { accounts, emailVerificationCodes, users } from "../../db/schema.js";
 
 type UserRow = typeof users.$inferSelect;
 type NewUser = typeof users.$inferInsert;
@@ -78,4 +78,62 @@ export async function findAccountsByUserId(userId: string) {
 		})
 		.from(accounts)
 		.where(eq(accounts.userId, userId));
+}
+
+export async function insertEmailCode(
+	email: string,
+	code: string,
+	expiresAt: Date,
+) {
+	const [row] = await db
+		.insert(emailVerificationCodes)
+		.values({ email, code, expiresAt })
+		.returning();
+	return row;
+}
+
+export async function findLatestValidCode(email: string) {
+	const [row] = await db
+		.select()
+		.from(emailVerificationCodes)
+		.where(
+			and(
+				eq(emailVerificationCodes.email, email),
+				eq(emailVerificationCodes.used, false),
+				gt(emailVerificationCodes.expiresAt, sql`now()`),
+			),
+		)
+		.orderBy(desc(emailVerificationCodes.createdAt))
+		.limit(1);
+	return row ?? null;
+}
+
+export async function incrementCodeAttempts(id: string) {
+	await db
+		.update(emailVerificationCodes)
+		.set({
+			attempts: sql`${emailVerificationCodes.attempts} + 1`,
+		})
+		.where(eq(emailVerificationCodes.id, id));
+}
+
+export async function markCodeUsed(id: string) {
+	await db
+		.update(emailVerificationCodes)
+		.set({ used: true })
+		.where(eq(emailVerificationCodes.id, id));
+}
+
+export async function findRecentCode(email: string, since: Date) {
+	const [row] = await db
+		.select()
+		.from(emailVerificationCodes)
+		.where(
+			and(
+				eq(emailVerificationCodes.email, email),
+				gt(emailVerificationCodes.createdAt, since),
+			),
+		)
+		.limit(1);
+	return row ?? null;
 }

@@ -1,6 +1,7 @@
 import {
 	boolean,
 	foreignKey,
+	integer,
 	pgTable,
 	text,
 	timestamp,
@@ -89,5 +90,15 @@ export const oauthStates = pgTable("oauth_states", {
 	deviceType: varchar("device_type", { length: 16 }).notNull(),
 	redirectUri: varchar("redirect_uri", { length: 512 }),
 	expiresAt: timestamp("expires_at").notNull(),
+	createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const emailVerificationCodes = pgTable("email_verification_codes", {
+	id: uuid().defaultRandom().primaryKey(),
+	email: varchar({ length: 255 }).notNull(),
+	code: varchar({ length: 6 }).notNull(),
+	expiresAt: timestamp("expires_at").notNull(),
+	attempts: integer().notNull().default(0),
+	used: boolean().notNull().default(false),
 	createdAt: timestamp("created_at").defaultNow().notNull(),
 });

@@ -67,3 +67,15 @@ export type UpdatePostInput = z.infer<typeof updatePostSchema>;
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;
 export type UpdateCommentInput = z.infer<typeof updateCommentSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+export const sendEmailCodeSchema = z.object({
+	email: z.string().email().max(255),
+});
+
+export const verifyEmailCodeSchema = z.object({
+	email: z.string().email().max(255),
+	code: z.string().length(6).regex(/^\d{6}$/),
+});
+
+export type SendEmailCodeInput = z.infer<typeof sendEmailCodeSchema>;
+export type VerifyEmailCodeInput = z.infer<typeof verifyEmailCodeSchema>;

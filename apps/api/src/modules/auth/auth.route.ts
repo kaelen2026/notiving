@@ -1,10 +1,16 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
+import { HTTPException } from "hono/http-exception";
 import { created, fail, ok } from "../../lib/api-response.js";
 import { authGuard, tryExtractUserId } from "../../middleware/auth.js";
 import type { AppEnv } from "../../types/env.js";
-import { loginSchema, registerSchema } from "./auth.schema.js";
+import {
+	loginSchema,
+	registerSchema,
+	sendEmailCodeSchema,
+	verifyEmailCodeSchema,
+} from "./auth.schema.js";
 import * as authService from "./auth.service.js";
 
 const REFRESH_TOKEN_COOKIE = "refresh_token";
@@ -130,3 +136,60 @@ authRoute.get("/me", authGuard, async (c) => {
 	}
 	return ok(c, user);
 });
+
+authRoute.post(
+	"/email/send-code",
+	zValidator("json", sendEmailCodeSchema),
+	async (c) => {
+		const { email } = c.req.valid("json");
+		try {
+			const result = await authService.sendEmailCode(email);
+			return ok(c, result);
+		} catch (err) {
+			if (err instanceof HTTPException) {
+				return fail(c, err.message, 429);
+			}
+			throw err;
+		}
+	},
+);
+
+authRoute.post(
+	"/email/verify-code",
+	zValidator("json", verifyEmailCodeSchema),
+	async (c) => {
+		const input = c.req.valid("json");
+		const anonymousUserId =
+			tryExtractUserId(c.req.header("Authorization")) ?? undefined;
+
+		try {
+			const result = await authService.verifyEmailCode(
+				input,
+				anonymousUserId,
+			);
+			if (!result) {
+				return fail(c, "Invalid or expired code", 401);
+			}
+
+			c.get("log").info({ userId: result.user.id }, "user logged in via email OTP");
+
+			if (isWeb(c)) {
+				setCookie(
+					c,
+					REFRESH_TOKEN_COOKIE,
+					result.refreshToken,
+					REFRESH_COOKIE_OPTIONS,
+				);
+				const { refreshToken: _, ...rest } = result;
+				return ok(c, rest);
+			}
+
+			return ok(c, result);
+		} catch (err) {
+			if (err instanceof HTTPException) {
+				return fail(c, err.message, err.status);
+			}
+			throw err;
+		}
+	},
+);

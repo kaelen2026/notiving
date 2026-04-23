@@ -10,6 +10,8 @@ import type {
 import type {
 	RegisterInput,
 	LoginInput,
+	SendEmailCodeInput,
+	VerifyEmailCodeInput,
 	CreatePostInput,
 	UpdatePostInput,
 	CreateCommentInput,
@@ -73,6 +75,20 @@ export class ApiClient {
 		return this.request<RefreshResponse>("/api/v1/auth/refresh", {
 			method: "POST",
 			body: JSON.stringify({ refreshToken }),
+		});
+	}
+
+	async sendEmailCode(input: SendEmailCodeInput): Promise<ApiResponse<{ message: string }>> {
+		return this.request<{ message: string }>("/api/v1/auth/email/send-code", {
+			method: "POST",
+			body: JSON.stringify(input),
+		});
+	}
+
+	async verifyEmailCode(input: VerifyEmailCodeInput): Promise<ApiResponse<AuthResponse>> {
+		return this.request<AuthResponse>("/api/v1/auth/email/verify-code", {
+			method: "POST",
+			body: JSON.stringify(input),
 		});
 	}
 

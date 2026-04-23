@@ -1,0 +1,65 @@
+/*
+ * Notiving × Tailwind v4 integration
+ *
+ * Import this AFTER tailwindcss in your app's CSS entry:
+ *   @import "tailwindcss";
+ *   @import "@notiving/design-tokens/theme.css";
+ *
+ * Then use the @theme block below to bind CSS vars → Tailwind utilities.
+ * e.g. bg-background, text-foreground, bg-primary, border-border, etc.
+ */
+
+@theme inline {
+  /* Semantic colors → Tailwind utilities */
+  --color-background:           var(--nv-bg);
+  --color-background-secondary: var(--nv-bg-secondary);
+  --color-background-tertiary:  var(--nv-bg-tertiary);
+  --color-surface:              var(--nv-bg-surface);
+
+  --color-foreground:           var(--nv-fg);
+  --color-foreground-secondary: var(--nv-fg-secondary);
+  --color-foreground-tertiary:  var(--nv-fg-tertiary);
+
+  --color-border:               var(--nv-border);
+  --color-border-secondary:     var(--nv-border-secondary);
+  --color-ring:                 var(--nv-ring);
+
+  --color-primary:              var(--nv-primary);
+  --color-primary-hover:        var(--nv-primary-hover);
+  --color-primary-active:       var(--nv-primary-active);
+  --color-primary-foreground:   var(--nv-primary-fg);
+  --color-primary-muted:        var(--nv-primary-muted);
+
+  --color-destructive:           var(--nv-destructive);
+  --color-destructive-foreground: var(--nv-destructive-fg);
+  --color-success:               var(--nv-success);
+  --color-success-foreground:    var(--nv-success-fg);
+  --color-warning:               var(--nv-warning);
+  --color-warning-foreground:    var(--nv-warning-fg);
+
+  --color-overlay:              var(--nv-overlay);
+
+  /* Font family */
+  --font-sans: var(--nv-font-sans);
+  --font-mono: var(--nv-font-mono);
+
+  /* Radius */
+  --radius-sm:   var(--nv-radius-sm);
+  --radius-md:   var(--nv-radius-md);
+  --radius-lg:   var(--nv-radius-lg);
+  --radius-xl:   var(--nv-radius-xl);
+  --radius-2xl:  var(--nv-radius-2xl);
+  --radius-full: var(--nv-radius-full);
+
+  /* Shadow */
+  --shadow-sm: var(--nv-shadow-sm);
+  --shadow-md: var(--nv-shadow-md);
+  --shadow-lg: var(--nv-shadow-lg);
+  --shadow-xl: var(--nv-shadow-xl);
+
+  /* Transition */
+  --transition-timing-function-default: var(--nv-ease-default);
+  --transition-timing-function-in:      var(--nv-ease-in);
+  --transition-timing-function-out:     var(--nv-ease-out);
+  --transition-timing-function-in-out:  var(--nv-ease-in-out);
+}

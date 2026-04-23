@@ -1,1 +1,9 @@
 @import "tailwindcss";
+@import "@notiving/design-tokens/theme.css";
+@import "@notiving/design-tokens/tailwind.css";
+
+body {
+  background: var(--nv-bg);
+  color: var(--nv-fg);
+  font-family: var(--nv-font-sans);
+}

@@ -1,0 +1,134 @@
+/*
+ * Notiving Design System — CSS Custom Properties
+ * Auto-consumed by Tailwind v4 via @theme or used directly as var(--nv-*)
+ *
+ * Usage:
+ *   @import "@notiving/design-tokens/theme.css";
+ */
+
+/* ─── Primitives ─── */
+:root {
+  /* Orange */
+  --nv-orange-50:  #fff7ed;
+  --nv-orange-100: #ffedd5;
+  --nv-orange-200: #fed7aa;
+  --nv-orange-300: #fdba74;
+  --nv-orange-400: #fb923c;
+  --nv-orange-500: #f97316;
+  --nv-orange-600: #ea580c;
+  --nv-orange-700: #c2410c;
+  --nv-orange-800: #9a3412;
+  --nv-orange-900: #7c2d12;
+  --nv-orange-950: #431407;
+
+  /* Gray (Neutral) */
+  --nv-gray-50:  #fafafa;
+  --nv-gray-100: #f5f5f5;
+  --nv-gray-200: #e5e5e5;
+  --nv-gray-300: #d4d4d4;
+  --nv-gray-400: #a3a3a3;
+  --nv-gray-500: #737373;
+  --nv-gray-600: #525252;
+  --nv-gray-700: #404040;
+  --nv-gray-800: #262626;
+  --nv-gray-900: #171717;
+  --nv-gray-950: #0a0a0a;
+
+  /* Status */
+  --nv-red-500:    #ef4444;
+  --nv-red-600:    #dc2626;
+  --nv-green-500:  #22c55e;
+  --nv-green-600:  #16a34a;
+  --nv-yellow-500: #eab308;
+  --nv-yellow-600: #ca8a04;
+
+  /* Typography */
+  --nv-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --nv-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Radius */
+  --nv-radius-none: 0px;
+  --nv-radius-sm:   4px;
+  --nv-radius-md:   8px;
+  --nv-radius-lg:   12px;
+  --nv-radius-xl:   16px;
+  --nv-radius-2xl:  24px;
+  --nv-radius-full: 9999px;
+
+  /* Shadow */
+  --nv-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --nv-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.07);
+  --nv-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
+  --nv-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.07), 0 8px 10px -6px rgba(0, 0, 0, 0.07);
+
+  /* Duration */
+  --nv-duration-fast:   100ms;
+  --nv-duration-normal: 200ms;
+  --nv-duration-slow:   300ms;
+
+  /* Easing */
+  --nv-ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --nv-ease-in:      cubic-bezier(0.4, 0, 1, 1);
+  --nv-ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --nv-ease-in-out:  cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Semantic — Light (default) ─── */
+:root {
+  --nv-bg:            var(--nv-gray-50);
+  --nv-bg-secondary:  var(--nv-gray-100);
+  --nv-bg-tertiary:   var(--nv-gray-200);
+  --nv-bg-surface:    #ffffff;
+  --nv-fg:            var(--nv-gray-900);
+  --nv-fg-secondary:  var(--nv-gray-600);
+  --nv-fg-tertiary:   var(--nv-gray-400);
+  --nv-border:        var(--nv-gray-200);
+  --nv-border-secondary: var(--nv-gray-100);
+  --nv-ring:          var(--nv-orange-500);
+
+  --nv-primary:            var(--nv-orange-500);
+  --nv-primary-hover:      var(--nv-orange-600);
+  --nv-primary-active:     var(--nv-orange-700);
+  --nv-primary-fg:         #ffffff;
+  --nv-primary-muted:      var(--nv-orange-50);
+
+  --nv-destructive:        var(--nv-red-500);
+  --nv-destructive-fg:     #ffffff;
+  --nv-success:            var(--nv-green-500);
+  --nv-success-fg:         #ffffff;
+  --nv-warning:            var(--nv-yellow-500);
+  --nv-warning-fg:         var(--nv-gray-900);
+
+  --nv-overlay:            rgba(0, 0, 0, 0.4);
+}
+
+/* ─── Semantic — Dark ─── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --nv-bg:            var(--nv-gray-950);
+    --nv-bg-secondary:  var(--nv-gray-900);
+    --nv-bg-tertiary:   var(--nv-gray-800);
+    --nv-bg-surface:    var(--nv-gray-900);
+    --nv-fg:            var(--nv-gray-50);
+    --nv-fg-secondary:  var(--nv-gray-400);
+    --nv-fg-tertiary:   var(--nv-gray-600);
+    --nv-border:        var(--nv-gray-800);
+    --nv-border-secondary: var(--nv-gray-700);
+    --nv-ring:          var(--nv-orange-500);
+
+    --nv-primary:            var(--nv-orange-500);
+    --nv-primary-hover:      var(--nv-orange-400);
+    --nv-primary-active:     var(--nv-orange-300);
+    --nv-primary-fg:         #ffffff;
+    --nv-primary-muted:      var(--nv-orange-950);
+
+    --nv-destructive:        var(--nv-red-600);
+    --nv-destructive-fg:     #ffffff;
+    --nv-success:            var(--nv-green-600);
+    --nv-success-fg:         #ffffff;
+    --nv-warning:            var(--nv-yellow-600);
+    --nv-warning-fg:         var(--nv-gray-50);
+
+    --nv-overlay:            rgba(0, 0, 0, 0.6);
+  }
+}
