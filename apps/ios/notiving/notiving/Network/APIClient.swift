@@ -35,7 +35,7 @@ final class APIClient {
     #if targetEnvironment(simulator)
     private let baseURL = "http://localhost:3001/api/v1"
     #else
-    private let baseURL = "http://localhost:3001/api/v1"
+    private let baseURL = "https://api.notiving.com/api/v1"
     #endif
 
     private let decoder: JSONDecoder = {

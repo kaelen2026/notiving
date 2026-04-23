@@ -46,6 +46,7 @@ export async function register(input: RegisterInput, anonymousUserId?: string) {
 				displayName: input.displayName,
 				isAnonymous: false,
 			});
+			await repo.upsertAccount(user.id, "password", input.email, input.email);
 			return { user: sanitizeUser(user), ...(await issueTokens(user)) };
 		}
 	}
@@ -57,6 +58,7 @@ export async function register(input: RegisterInput, anonymousUserId?: string) {
 			password: hashedPassword,
 			displayName: input.displayName,
 		});
+		await repo.upsertAccount(user.id, "password", input.email, input.email);
 		return { user: sanitizeUser(user), ...(await issueTokens(user)) };
 	} catch (err: unknown) {
 		const dbError = err as { code?: string; detail?: string };
@@ -74,6 +76,7 @@ export async function login(input: LoginInput) {
 	if (!user || !user.password) return null;
 	const valid = await bcrypt.compare(input.password, user.password);
 	if (!valid) return null;
+	await repo.upsertAccount(user.id, "password", input.email, input.email);
 	return { user: sanitizeUser(user), ...(await issueTokens(user)) };
 }
 
@@ -135,6 +138,7 @@ export async function verifyEmailCode(input: VerifyEmailCodeInput, anonymousUser
 
 	const existingUser = await repo.findUserByEmail(input.email);
 	if (existingUser) {
+		await repo.upsertAccount(existingUser.id, "email", input.email, input.email);
 		return { user: sanitizeUser(existingUser), ...(await issueTokens(existingUser)) };
 	}
 
@@ -146,6 +150,7 @@ export async function verifyEmailCode(input: VerifyEmailCodeInput, anonymousUser
 				username: `user_${Math.random().toString(36).slice(2, 10)}`,
 				isAnonymous: false,
 			});
+			await repo.upsertAccount(user.id, "email", input.email, input.email);
 			return { user: sanitizeUser(user), ...(await issueTokens(user)) };
 		}
 	}
@@ -155,5 +160,6 @@ export async function verifyEmailCode(input: VerifyEmailCodeInput, anonymousUser
 		username: `user_${Math.random().toString(36).slice(2, 10)}`,
 		isAnonymous: false,
 	});
+	await repo.upsertAccount(user.id, "email", input.email, input.email);
 	return { user: sanitizeUser(user), ...(await issueTokens(user)) };
 }

@@ -18,7 +18,15 @@ final class LoginViewModel: ObservableObject {
     @Published var mode: LoginMode = .otp
     @Published var email = ""
     @Published var password = ""
-    @Published var code: [String] = Array(repeating: "", count: 6)
+    @Published var codeText = "" {
+        didSet {
+            // Only allow digits, max 6 characters
+            let filtered = String(codeText.filter { $0.isNumber }.prefix(6))
+            if filtered != codeText {
+                codeText = filtered
+            }
+        }
+    }
     @Published var otpStep: OTPStep = .email
     @Published var isLoading = false
     @Published var error: String?
@@ -38,7 +46,7 @@ final class LoginViewModel: ObservableObject {
             case .email:
                 return true
             case .code:
-                return code.allSatisfy { !$0.isEmpty }
+                return codeText.count == 6
             }
         }
     }
@@ -55,7 +63,7 @@ final class LoginViewModel: ObservableObject {
     func switchMode(_ newMode: LoginMode) {
         mode = newMode
         password = ""
-        code = Array(repeating: "", count: 6)
+        codeText = ""
         otpStep = .email
         error = nil
         stopCountdown()
@@ -131,15 +139,14 @@ final class LoginViewModel: ObservableObject {
     // MARK: - OTP Verify Code
 
     func verifyCode() async -> (User, String)? {
-        let codeString = code.joined()
-        guard codeString.count == 6 else { return nil }
+        guard codeText.count == 6 else { return nil }
         isLoading = true
         error = nil
 
         do {
             let body = try JSONEncoder().encode(VerifyCodeRequest(
                 email: email.trimmingCharacters(in: .whitespaces),
-                code: codeString
+                code: codeText
             ))
             let result: LoginResponse = try await APIClient.shared.request(
                 path: "/auth/email/verify-code",
@@ -168,7 +175,7 @@ final class LoginViewModel: ObservableObject {
 
     func changeEmail() {
         otpStep = .email
-        code = Array(repeating: "", count: 6)
+        codeText = ""
         error = nil
     }
 

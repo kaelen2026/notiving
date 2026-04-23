@@ -124,6 +124,18 @@ export async function markCodeUsed(id: string) {
 		.where(eq(emailVerificationCodes.id, id));
 }
 
+export async function upsertAccount(userId: string, provider: string, providerUserId: string, email?: string) {
+	const [row] = await getDb()
+		.insert(accounts)
+		.values({ userId, provider, providerUserId, email })
+		.onConflictDoUpdate({
+			target: [accounts.provider, accounts.providerUserId],
+			set: { email, updatedAt: new Date() },
+		})
+		.returning();
+	return row;
+}
+
 export async function findRecentCode(email: string, since: Date) {
 	const [row] = await getDb()
 		.select()

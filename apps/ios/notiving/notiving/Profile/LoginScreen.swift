@@ -6,7 +6,7 @@ struct LoginScreen: View {
     @StateObject private var viewModel = LoginViewModel()
     var onLoginSuccess: (User, String) -> Void
 
-    @FocusState private var focusedCodeIndex: Int?
+    @FocusState private var isCodeFieldFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -124,26 +124,40 @@ struct LoginScreen: View {
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            HStack(spacing: 8) {
-                ForEach(0..<6, id: \.self) { index in
-                    TextField("", text: Binding(
-                        get: { viewModel.code[index] },
-                        set: { newValue in
-                            handleCodeInput(index: index, value: newValue)
-                        }
-                    ))
+            ZStack {
+                // Hidden single TextField that captures all input
+                TextField("", text: $viewModel.codeText)
                     .keyboardType(.numberPad)
                     .textContentType(.oneTimeCode)
-                    .multilineTextAlignment(.center)
-                    .font(.title2.weight(.semibold))
-                    .frame(height: 48)
-                    .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .focused($focusedCodeIndex, equals: index)
+                    .focused($isCodeFieldFocused)
+                    .opacity(0)
+                    .frame(width: 1, height: 1)
+
+                // Visual code boxes
+                HStack(spacing: 8) {
+                    ForEach(0..<6, id: \.self) { index in
+                        let char = index < viewModel.codeText.count
+                            ? String(viewModel.codeText[viewModel.codeText.index(viewModel.codeText.startIndex, offsetBy: index)])
+                            : ""
+                        Text(char)
+                            .font(.title2.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .background(Color(.systemBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(index == viewModel.codeText.count && isCodeFieldFocused == true ? Color.accentColor : Color.clear, lineWidth: 2)
+                            )
+                    }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    isCodeFieldFocused = true
                 }
             }
             .onAppear {
-                focusedCodeIndex = 0
+                isCodeFieldFocused = true
             }
 
             resendButton
@@ -223,31 +237,4 @@ struct LoginScreen: View {
         }
     }
 
-    // MARK: - Code Input Helpers
-
-    private func handleCodeInput(index: Int, value: String) {
-        let filtered = value.filter { $0.isNumber }
-
-        if filtered.count > 1 {
-            // Paste handling
-            let chars = Array(filtered.prefix(6))
-            for i in 0..<6 {
-                viewModel.code[i] = i < chars.count ? String(chars[i]) : ""
-            }
-            focusedCodeIndex = min(chars.count, 5)
-            return
-        }
-
-        if filtered.isEmpty && viewModel.code[index].isEmpty && index > 0 {
-            // Backspace on empty → move back
-            focusedCodeIndex = index - 1
-            return
-        }
-
-        viewModel.code[index] = String(filtered.prefix(1))
-
-        if !filtered.isEmpty && index < 5 {
-            focusedCodeIndex = index + 1
-        }
-    }
 }
