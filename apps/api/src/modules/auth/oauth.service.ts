@@ -11,11 +11,11 @@ function sanitizeUser(
 	return rest;
 }
 
-function issueTokens(
+async function issueTokens(
 	user: NonNullable<Awaited<ReturnType<typeof authRepo.findUserById>>>,
 ) {
-	const accessToken = signAccessToken(user.id);
-	const refreshToken = signRefreshToken(user.id, user.tokenVersion);
+	const accessToken = await signAccessToken(user.id);
+	const refreshToken = await signRefreshToken(user.id, user.tokenVersion);
 	return { accessToken, refreshToken };
 }
 
@@ -56,7 +56,7 @@ export async function handleOAuthUser(
 
 		const user = await authRepo.findUserById(existingAccount.userId);
 		if (!user) throw new Error("User not found for existing account");
-		return { user: sanitizeUser(user), ...issueTokens(user) };
+		return { user: sanitizeUser(user), ...(await issueTokens(user)) };
 	}
 
 	if (anonymousUserId) {
@@ -70,7 +70,7 @@ export async function handleOAuthUser(
 				isAnonymous: false,
 			});
 			await oauthRepo.insertAccount(buildAccountValues(user.id, profile));
-			return { user: sanitizeUser(user), ...issueTokens(user) };
+			return { user: sanitizeUser(user), ...(await issueTokens(user)) };
 		}
 	}
 
@@ -82,7 +82,7 @@ export async function handleOAuthUser(
 			);
 			return {
 				user: sanitizeUser(existingUser),
-				...issueTokens(existingUser),
+				...(await issueTokens(existingUser)),
 			};
 		}
 	}
@@ -95,7 +95,7 @@ export async function handleOAuthUser(
 		isAnonymous: false,
 	});
 	await oauthRepo.insertAccount(buildAccountValues(user.id, profile));
-	return { user: sanitizeUser(user), ...issueTokens(user) };
+	return { user: sanitizeUser(user), ...(await issueTokens(user)) };
 }
 
 export async function linkPassword(userId: string, password: string) {

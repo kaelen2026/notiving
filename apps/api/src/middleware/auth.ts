@@ -1,6 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
-import type { Logger } from "pino";
+import type { LoggerInstance } from "../lib/logger.js";
 import { verifyAccessToken } from "../lib/jwt.js";
 import { findUserIsAnonymous } from "../modules/auth/auth.repository.js";
 
@@ -10,7 +10,7 @@ export type AuthEnv = {
 	};
 };
 
-type Env = { Variables: AuthEnv["Variables"] & { log: Logger } };
+type Env = { Variables: AuthEnv["Variables"] & { log: LoggerInstance } };
 
 export const authGuard = createMiddleware<Env>(async (c, next) => {
 	const header = c.req.header("Authorization");
@@ -19,7 +19,7 @@ export const authGuard = createMiddleware<Env>(async (c, next) => {
 	}
 
 	try {
-		const payload = verifyAccessToken(header.slice(7));
+		const payload = await verifyAccessToken(header.slice(7));
 		c.set("userId", payload.sub);
 		c.set("log", c.get("log").child({ userId: payload.sub }));
 		await next();
@@ -28,10 +28,10 @@ export const authGuard = createMiddleware<Env>(async (c, next) => {
 	}
 });
 
-export function tryExtractUserId(header: string | undefined): string | null {
+export async function tryExtractUserId(header: string | undefined): Promise<string | null> {
 	if (!header?.startsWith("Bearer ")) return null;
 	try {
-		const payload = verifyAccessToken(header.slice(7));
+		const payload = await verifyAccessToken(header.slice(7));
 		return payload.sub;
 	} catch {
 		return null;

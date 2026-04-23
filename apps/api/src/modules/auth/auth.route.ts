@@ -31,7 +31,7 @@ function isWeb(c: { get: (key: "deviceType") => string }) {
 authRoute.post("/register", zValidator("json", registerSchema), async (c) => {
 	const input = c.req.valid("json");
 	const anonymousUserId =
-		tryExtractUserId(c.req.header("Authorization")) ?? undefined;
+		(await tryExtractUserId(c.req.header("Authorization"))) ?? undefined;
 	const result = await authService.register(input, anonymousUserId);
 	c.get("log").info({ userId: result.user.id }, "user registered");
 
@@ -160,7 +160,7 @@ authRoute.post(
 	async (c) => {
 		const input = c.req.valid("json");
 		const anonymousUserId =
-			tryExtractUserId(c.req.header("Authorization")) ?? undefined;
+			(await tryExtractUserId(c.req.header("Authorization"))) ?? undefined;
 
 		try {
 			const result = await authService.verifyEmailCode(

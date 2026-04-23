@@ -8,6 +8,9 @@ struct notivingApp: App {
         WindowGroup {
             ShellRootView()
                 .preferredColorScheme(settings.appearanceMode.colorScheme)
+                .onOpenURL { url in
+                    DeepLinkHandler.handle(url)
+                }
         }
     }
 }

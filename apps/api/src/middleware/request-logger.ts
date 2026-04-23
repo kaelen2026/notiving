@@ -1,11 +1,11 @@
 import { createMiddleware } from "hono/factory";
-import type { Logger } from "pino";
+import type { LoggerInstance } from "../lib/logger.js";
 import { logger } from "../lib/logger.js";
 import type { RequestIdEnv } from "./request-id.js";
 
 export type RequestLoggerEnv = {
 	Variables: {
-		log: Logger;
+		log: LoggerInstance;
 	};
 };
 

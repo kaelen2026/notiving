@@ -1,9 +1,14 @@
-import crypto from "node:crypto";
 import { eq, lt } from "drizzle-orm";
 import { db } from "../../db/index.js";
 import { oauthStates } from "../../db/schema.js";
 
 const STATE_TTL_MS = 10 * 60 * 1000;
+
+function randomHex(bytes: number): string {
+	const buf = new Uint8Array(bytes);
+	crypto.getRandomValues(buf);
+	return Array.from(buf, (b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 export async function createOAuthState(params: {
 	provider: string;
@@ -12,7 +17,7 @@ export async function createOAuthState(params: {
 	nonce?: string;
 	redirectUri?: string;
 }): Promise<string> {
-	const state = crypto.randomBytes(32).toString("hex");
+	const state = randomHex(32);
 	const expiresAt = new Date(Date.now() + STATE_TTL_MS);
 
 	await db.insert(oauthStates).values({

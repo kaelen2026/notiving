@@ -78,8 +78,76 @@ API 的 OAuth callback 已支持 `redirect_uri`，设为：
 - iOS/Android: `notiving://oauth/callback`
 - Web: `https://notiving.app/oauth/callback`
 
-## 7. 实现优先级
+## 7. 验证方法
 
-1. **P0** — Custom Scheme 注册 + DeepLinkHandler + onOpenURL / onNewIntent（基础能力）
-2. **P1** — Universal Link / App Link + well-known 文件部署（分享体验）
-3. **P2** — Deferred Deeplink（未安装时记住目标页，安装后首次打开跳转）
+### iOS 模拟器
+
+```bash
+# Custom Scheme — 跳转到 home tab
+xcrun simctl openurl booted "notiving://home"
+
+# 跳转到 profile tab
+xcrun simctl openurl booted "notiving://profile"
+
+# OAuth 回调（token 写入 SessionManager，跳转 profile）
+xcrun simctl openurl booted "notiving://oauth/callback?token=test_token_123"
+
+# Universal Link
+xcrun simctl openurl booted "https://notiving.app/explore"
+```
+
+### Android 模拟器 / 真机
+
+```bash
+# Custom Scheme — 跳转到 home tab
+adb shell am start -a android.intent.action.VIEW -d "notiving://home"
+
+# 跳转到 profile tab
+adb shell am start -a android.intent.action.VIEW -d "notiving://profile"
+
+# OAuth 回调
+adb shell am start -a android.intent.action.VIEW -d "notiving://oauth/callback?token=test_token_123"
+
+# App Link
+adb shell am start -a android.intent.action.VIEW -d "https://notiving.app/explore"
+```
+
+### 验证清单
+
+| 场景 | 预期行为 | iOS | Android |
+|------|----------|-----|---------|
+| `notiving://home` | 切换到 HomeTab | ☐ | ☐ |
+| `notiving://explore` | 切换到 Explore | ☐ | ☐ |
+| `notiving://profile` | 切换到 ProfileTab | ☐ | ☐ |
+| `notiving://oauth/callback?token=xxx` | token 存入 Session，跳转 profile | ☐ | ☐ |
+| `https://notiving.app/home` | 同 custom scheme 行为 | ☐ | ☐ |
+| 冷启动 deeplink | App 未运行时点击链接，启动后直达目标页 | ☐ | ☐ |
+| 热启动 deeplink | App 在后台时点击链接，回到前台并跳转 | ☐ | ☐ |
+| 无效路径 `notiving://unknown` | 不崩溃，静默忽略 | ☐ | ☐ |
+
+### 调试技巧
+
+- iOS: `DeepLinkHandler.handle` 入口加 `print("deeplink: \(url)")` 查看 Xcode Console
+- Android: `adb logcat | grep -i "deeplink\|intent"` 查看 intent 分发
+- Android App Link 验证状态: `adb shell pm get-app-links com.notiving.notiving`
+
+## 8. 实现状态
+
+### P0 — 已完成 ✅
+
+- [x] iOS: `Info.plist` 注册 `notiving://` scheme
+- [x] iOS: `DeepLinkHandler.swift` 解析 URL 并路由
+- [x] iOS: `notivingApp.swift` 添加 `.onOpenURL` modifier
+- [x] Android: `AndroidManifest.xml` 添加 custom scheme + App Link intent-filter
+- [x] Android: `DeepLinkHandler.kt` 解析 URI 并路由
+- [x] Android: `MainActivity.kt` 添加 `onNewIntent` 处理
+
+### P1 — 待实现
+
+- [ ] 部署 `/.well-known/apple-app-site-association`（iOS Universal Link）
+- [ ] 部署 `/.well-known/assetlinks.json`（Android App Link）
+- [ ] iOS: 添加 Associated Domains entitlement (`applinks:notiving.app`)
+
+### P2 — 待实现
+
+- [ ] Deferred Deeplink（未安装时记住目标页，安装后首次打开跳转）

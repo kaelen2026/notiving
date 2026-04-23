@@ -1,34 +1,44 @@
-import jwt from "jsonwebtoken";
+import { SignJWT, jwtVerify } from "jose";
 import { env } from "../config/env.js";
 
 const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL = "7d";
 
 export interface TokenPayload {
-	sub: string;
-	version?: string;
+  sub: string;
+  version?: string;
 }
 
-export function signAccessToken(userId: string): string {
-	return jwt.sign({ sub: userId }, env.JWT_SECRET, {
-		expiresIn: ACCESS_TOKEN_TTL,
-	});
+function secret(key: string) {
+  return new TextEncoder().encode(key);
 }
 
-export function signRefreshToken(userId: string, tokenVersion: string): string {
-	return jwt.sign(
-		{ sub: userId, version: tokenVersion },
-		env.JWT_REFRESH_SECRET,
-		{
-			expiresIn: REFRESH_TOKEN_TTL,
-		},
-	);
+export async function signAccessToken(userId: string): Promise<string> {
+  return new SignJWT({ sub: userId })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime(ACCESS_TOKEN_TTL)
+    .sign(secret(env.JWT_SECRET));
 }
 
-export function verifyAccessToken(token: string): TokenPayload {
-	return jwt.verify(token, env.JWT_SECRET) as TokenPayload;
+export async function signRefreshToken(
+  userId: string,
+  tokenVersion: string,
+): Promise<string> {
+  return new SignJWT({ sub: userId, version: tokenVersion })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime(REFRESH_TOKEN_TTL)
+    .sign(secret(env.JWT_REFRESH_SECRET));
 }
 
-export function verifyRefreshToken(token: string): TokenPayload {
-	return jwt.verify(token, env.JWT_REFRESH_SECRET) as TokenPayload;
+export async function verifyAccessToken(token: string): Promise<TokenPayload> {
+  const { payload } = await jwtVerify(token, secret(env.JWT_SECRET));
+  return payload as unknown as TokenPayload;
+}
+
+export async function verifyRefreshToken(token: string): Promise<TokenPayload> {
+  const { payload } = await jwtVerify(
+    token,
+    secret(env.JWT_REFRESH_SECRET),
+  );
+  return payload as unknown as TokenPayload;
 }

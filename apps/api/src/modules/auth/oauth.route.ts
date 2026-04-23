@@ -120,7 +120,7 @@ oauthRoute.get("/oauth/:provider/callback", async (c) => {
 	}
 
 	const anonymousUserId =
-		tryExtractUserId(c.req.header("Authorization")) ?? undefined;
+		(await tryExtractUserId(c.req.header("Authorization"))) ?? undefined;
 
 	let profile: OAuthProfile;
 	if (provider === "google") {
@@ -177,7 +177,7 @@ oauthRoute.post("/oauth/:provider/callback", async (c) => {
 	}
 
 	const anonymousUserId =
-		tryExtractUserId(c.req.header("Authorization")) ?? undefined;
+		(await tryExtractUserId(c.req.header("Authorization"))) ?? undefined;
 
 	let profile: OAuthProfile;
 	if (provider === "apple") {
