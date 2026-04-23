@@ -1,7 +1,11 @@
 node_modules
+.git
 .next
 .turbo
 dist
 apps/api
 apps/rn
 apps/android
+apps/ios
+apps/flutter
+apps/harmony

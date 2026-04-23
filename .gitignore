@@ -8,3 +8,4 @@ Pods/
 build/
 apps/android/.idea/
 .vercel
+.env*.local
