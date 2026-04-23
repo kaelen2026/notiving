@@ -5,6 +5,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:notiving.com</string>
+		<string>applinks:h5.notiving.com</string>
 	</array>
 </dict>
 </plist>

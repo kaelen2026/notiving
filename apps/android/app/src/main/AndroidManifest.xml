@@ -35,6 +35,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="notiving.com" />
+                <data android:scheme="https" android:host="h5.notiving.com" />
             </intent-filter>
         </activity>
     </application>

@@ -1,4 +1,5 @@
 import { Routes, Route, Link } from "react-router-dom";
+import OpenInAppBanner from "./components/OpenInAppBanner";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Login from "./pages/Login";
@@ -7,6 +8,7 @@ import NotFound from "./pages/NotFound";
 export default function App() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <OpenInAppBanner />
       <nav className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
           <Link to="/" className="text-lg font-semibold">
