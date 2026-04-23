@@ -6,3 +6,4 @@ xcuserdata/
 .env
 Pods/
 build/
+apps/android/.idea/
