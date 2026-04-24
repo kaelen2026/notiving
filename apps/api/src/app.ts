@@ -51,12 +51,12 @@ export default function createApp() {
 
 	app.route("/health", healthRoute);
 	app.route("/docs", docsRoute);
-	app.use("/api/v1/auth/*", rateLimiter({ windowMs: 60_000, max: 10 }));
-	app.route("/api/v1/auth", authRoute);
-	app.route("/api/v1/auth", oauthRoute);
-	app.route("/api/v1/users", usersRoute);
-	app.route("/api/v1/posts", postsRoute);
-	app.route("/api/v1/comments", commentsRoute);
+	app.use("/v1/auth/*", rateLimiter({ windowMs: 60_000, max: 10 }));
+	app.route("/v1/auth", authRoute);
+	app.route("/v1/auth", oauthRoute);
+	app.route("/v1/users", usersRoute);
+	app.route("/v1/posts", postsRoute);
+	app.route("/v1/comments", commentsRoute);
 
 	return app;
 }

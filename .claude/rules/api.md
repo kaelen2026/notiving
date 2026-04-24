@@ -60,7 +60,7 @@ src/modules/{domain}/
 
 ## 路由
 
-- API 版本前缀：`/api/v1/`
+- API 版本前缀：`/v1/`
 - RESTful 命名：名词复数（`/posts`、`/users`）
 - 路由参数用 `:id` 格式
 

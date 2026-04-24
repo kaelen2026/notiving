@@ -84,7 +84,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/register": {
+		"/v1/auth/register": {
 			post: {
 				summary: "Register new user",
 				tags: ["Auth"],
@@ -117,7 +117,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/login": {
+		"/v1/auth/login": {
 			post: {
 				summary: "Login with email and password",
 				tags: ["Auth"],
@@ -142,7 +142,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/refresh": {
+		"/v1/auth/refresh": {
 			post: {
 				summary: "Refresh access token",
 				tags: ["Auth"],
@@ -164,7 +164,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/logout": {
+		"/v1/auth/logout": {
 			post: {
 				summary: "Logout (invalidate refresh tokens)",
 				tags: ["Auth"],
@@ -175,7 +175,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/me": {
+		"/v1/auth/me": {
 			get: {
 				summary: "Get current user profile",
 				tags: ["Auth"],
@@ -187,7 +187,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/email/send-code": {
+		"/v1/auth/email/send-code": {
 			post: {
 				summary: "Send email verification code",
 				tags: ["Auth"],
@@ -211,7 +211,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/email/verify-code": {
+		"/v1/auth/email/verify-code": {
 			post: {
 				summary: "Verify email code and login/register",
 				tags: ["Auth"],
@@ -242,7 +242,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/anonymous": {
+		"/v1/auth/anonymous": {
 			post: {
 				summary: "Create anonymous user",
 				tags: ["OAuth"],
@@ -251,7 +251,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/oauth/{provider}": {
+		"/v1/auth/oauth/{provider}": {
 			get: {
 				summary: "Initiate OAuth flow",
 				tags: ["OAuth"],
@@ -275,7 +275,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/oauth/{provider}/callback": {
+		"/v1/auth/oauth/{provider}/callback": {
 			get: {
 				summary: "OAuth callback (GET)",
 				tags: ["OAuth"],
@@ -331,7 +331,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/oauth/{provider}/token": {
+		"/v1/auth/oauth/{provider}/token": {
 			post: {
 				summary: "Exchange OAuth code for tokens (native clients)",
 				tags: ["OAuth"],
@@ -372,7 +372,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/auth/link-password": {
+		"/v1/auth/link-password": {
 			post: {
 				summary: "Link password to OAuth-only account",
 				tags: ["OAuth"],
@@ -399,7 +399,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/users": {
+		"/v1/users": {
 			get: {
 				summary: "List users",
 				tags: ["Users"],
@@ -407,7 +407,7 @@ const openApiSpec = {
 				responses: { "200": { description: "Paginated list of users" } },
 			},
 		},
-		"/api/v1/users/{id}": {
+		"/v1/users/{id}": {
 			get: {
 				summary: "Get user by ID",
 				tags: ["Users"],
@@ -473,7 +473,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/posts": {
+		"/v1/posts": {
 			get: {
 				summary: "List posts",
 				tags: ["Posts"],
@@ -519,7 +519,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/posts/{id}": {
+		"/v1/posts/{id}": {
 			get: {
 				summary: "Get post by ID",
 				tags: ["Posts"],
@@ -591,7 +591,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/comments": {
+		"/v1/comments": {
 			get: {
 				summary: "List comments",
 				tags: ["Comments"],
@@ -636,7 +636,7 @@ const openApiSpec = {
 				},
 			},
 		},
-		"/api/v1/comments/{id}": {
+		"/v1/comments/{id}": {
 			get: {
 				summary: "Get comment by ID",
 				tags: ["Comments"],

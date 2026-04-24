@@ -43,7 +43,7 @@ CREATE TABLE likes (
 
 | Method | Path | 描述 | Auth |
 |--------|------|------|------|
-| POST | `/api/v1/resource` | 创建资源 | Required |
+| POST | `/v1/resource` | 创建资源 | Required |
 
 ### Request / Response 契约
 

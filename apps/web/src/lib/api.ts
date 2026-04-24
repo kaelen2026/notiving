@@ -17,7 +17,7 @@ const memoryTokenProvider: TokenProvider = {
   },
   async refresh() {
     try {
-      const res = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
+      const res = await fetch(`${API_BASE}/v1/auth/refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

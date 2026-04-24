@@ -18,7 +18,7 @@ final class ExploreViewModel: ObservableObject {
 
         do {
             let result: PaginatedResult<Post> = try await APIClient.shared.request(
-                path: "/posts?limit=20",
+                path: "/v1/posts?limit=20",
                 authenticated: false
             )
             posts = result.items
@@ -39,7 +39,7 @@ final class ExploreViewModel: ObservableObject {
 
         do {
             let result: PaginatedResult<Post> = try await APIClient.shared.request(
-                path: "/posts?limit=20&cursor=\(cursor)",
+                path: "/v1/posts?limit=20&cursor=\(cursor)",
                 authenticated: false
             )
             posts.append(contentsOf: result.items)

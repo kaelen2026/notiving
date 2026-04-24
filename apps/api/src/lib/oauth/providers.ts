@@ -36,7 +36,7 @@ function getGoogleProvider(): arctic.Google | null {
 			_google = new arctic.Google(
 				env.GOOGLE_CLIENT_ID,
 				env.GOOGLE_CLIENT_SECRET,
-				`${env.OAUTH_REDIRECT_BASE_URL}/api/v1/auth/oauth/google/callback`,
+				`${env.OAUTH_REDIRECT_BASE_URL}/v1/auth/oauth/google/callback`,
 			);
 		}
 	}
@@ -60,7 +60,7 @@ function getAppleProvider(): arctic.Apple | null {
 				env.APPLE_TEAM_ID,
 				env.APPLE_KEY_ID,
 				parseApplePrivateKey(env.APPLE_PRIVATE_KEY),
-				`${env.OAUTH_REDIRECT_BASE_URL}/api/v1/auth/oauth/apple/callback`,
+				`${env.OAUTH_REDIRECT_BASE_URL}/v1/auth/oauth/apple/callback`,
 			);
 		}
 	}

@@ -19,9 +19,9 @@ describe("Health Check", () => {
 });
 
 describe("Auth Endpoints", () => {
-	describe("POST /api/v1/auth/register", () => {
+	describe("POST /v1/auth/register", () => {
 		it("should reject invalid email", async () => {
-			const req = new Request("http://localhost/api/v1/auth/register", {
+			const req = new Request("http://localhost/v1/auth/register", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
@@ -38,7 +38,7 @@ describe("Auth Endpoints", () => {
 		});
 
 		it("should reject short password", async () => {
-			const req = new Request("http://localhost/api/v1/auth/register", {
+			const req = new Request("http://localhost/v1/auth/register", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
@@ -55,7 +55,7 @@ describe("Auth Endpoints", () => {
 		});
 
 		it("should reject invalid username format", async () => {
-			const req = new Request("http://localhost/api/v1/auth/register", {
+			const req = new Request("http://localhost/v1/auth/register", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
@@ -72,9 +72,9 @@ describe("Auth Endpoints", () => {
 		});
 	});
 
-	describe("POST /api/v1/auth/login", () => {
+	describe("POST /v1/auth/login", () => {
 		it("should reject missing credentials", async () => {
-			const req = new Request("http://localhost/api/v1/auth/login", {
+			const req = new Request("http://localhost/v1/auth/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({}),
@@ -91,7 +91,7 @@ describe("Auth Endpoints", () => {
 describe("Rate Limiting", () => {
 	it("should rate limit auth endpoints", async () => {
 		const requests = Array.from({ length: 12 }, () => {
-			const req = new Request("http://localhost/api/v1/auth/login", {
+			const req = new Request("http://localhost/v1/auth/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({

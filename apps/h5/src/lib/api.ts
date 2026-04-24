@@ -17,7 +17,7 @@ const localStorageTokenProvider: TokenProvider = {
     const refreshToken = localStorage.getItem("refreshToken");
     if (!refreshToken) return null;
     try {
-      const res = await fetch(`${API_BASE}/api/v1/auth/refresh`, {
+      const res = await fetch(`${API_BASE}/v1/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refreshToken }),

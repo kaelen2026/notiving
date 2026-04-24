@@ -26,7 +26,7 @@ import * as oauthService from "./oauth.service.js";
 
 const REFRESH_TOKEN_COOKIE = "refresh_token";
 const REFRESH_COOKIE_OPTIONS = {
-	path: "/api/v1/auth",
+	path: "/v1/auth",
 	httpOnly: true,
 	secure: true,
 	sameSite: "Strict" as const,

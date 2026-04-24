@@ -82,7 +82,7 @@ final class LoginViewModel: ObservableObject {
                 password: password
             ))
             let result: LoginResponse = try await APIClient.shared.request(
-                path: "/auth/login",
+                path: "/v1/auth/login",
                 method: "POST",
                 body: body,
                 authenticated: false
@@ -115,7 +115,7 @@ final class LoginViewModel: ObservableObject {
         do {
             let body = try JSONEncoder().encode(SendCodeRequest(email: trimmedEmail))
             let _: SendCodeResponse = try await APIClient.shared.request(
-                path: "/auth/email/send-code",
+                path: "/v1/auth/email/send-code",
                 method: "POST",
                 body: body,
                 authenticated: false
@@ -149,7 +149,7 @@ final class LoginViewModel: ObservableObject {
                 code: codeText
             ))
             let result: LoginResponse = try await APIClient.shared.request(
-                path: "/auth/email/verify-code",
+                path: "/v1/auth/email/verify-code",
                 method: "POST",
                 body: body,
                 authenticated: false

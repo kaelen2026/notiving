@@ -95,39 +95,39 @@ export class ApiClient {
 
 	// Auth
 	async register(input: RegisterInput): Promise<AuthResponse> {
-		return this.request<AuthResponse>("/api/v1/auth/register", {
+		return this.request<AuthResponse>("/v1/auth/register", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
 	async login(input: LoginInput): Promise<AuthResponse> {
-		return this.request<AuthResponse>("/api/v1/auth/login", {
+		return this.request<AuthResponse>("/v1/auth/login", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
 	async sendEmailCode(input: SendEmailCodeInput): Promise<{ message: string }> {
-		return this.request<{ message: string }>("/api/v1/auth/email/send-code", {
+		return this.request<{ message: string }>("/v1/auth/email/send-code", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
 	async verifyEmailCode(input: VerifyEmailCodeInput): Promise<AuthResponse> {
-		return this.request<AuthResponse>("/api/v1/auth/email/verify-code", {
+		return this.request<AuthResponse>("/v1/auth/email/verify-code", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
 	async getMe(): Promise<User> {
-		return this.request<User>("/api/v1/auth/me");
+		return this.request<User>("/v1/auth/me");
 	}
 
 	async logout(): Promise<void> {
-		await this.request<{ message: string }>("/api/v1/auth/logout", {
+		await this.request<{ message: string }>("/v1/auth/logout", {
 			method: "POST",
 		});
 	}
@@ -141,23 +141,23 @@ export class ApiClient {
 		if (params?.cursor) query.set("cursor", params.cursor);
 		if (params?.limit) query.set("limit", params.limit.toString());
 		return this.request<PaginatedResult<User>>(
-			`/api/v1/users?${query.toString()}`,
+			`/v1/users?${query.toString()}`,
 		);
 	}
 
 	async getUser(id: string): Promise<User> {
-		return this.request<User>(`/api/v1/users/${id}`);
+		return this.request<User>(`/v1/users/${id}`);
 	}
 
 	async updateUser(id: string, input: UpdateUserInput): Promise<User> {
-		return this.request<User>(`/api/v1/users/${id}`, {
+		return this.request<User>(`/v1/users/${id}`, {
 			method: "PUT",
 			body: JSON.stringify(input),
 		});
 	}
 
 	async deleteUser(id: string): Promise<{ deleted: boolean }> {
-		return this.request<{ deleted: boolean }>(`/api/v1/users/${id}`, {
+		return this.request<{ deleted: boolean }>(`/v1/users/${id}`, {
 			method: "DELETE",
 		});
 	}
@@ -173,30 +173,30 @@ export class ApiClient {
 		if (params?.limit) query.set("limit", params.limit.toString());
 		if (params?.authorId) query.set("authorId", params.authorId);
 		return this.request<PaginatedResult<Post>>(
-			`/api/v1/posts?${query.toString()}`,
+			`/v1/posts?${query.toString()}`,
 		);
 	}
 
 	async getPost(id: string): Promise<Post> {
-		return this.request<Post>(`/api/v1/posts/${id}`);
+		return this.request<Post>(`/v1/posts/${id}`);
 	}
 
 	async createPost(input: CreatePostInput): Promise<Post> {
-		return this.request<Post>("/api/v1/posts", {
+		return this.request<Post>("/v1/posts", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
 	async updatePost(id: string, input: UpdatePostInput): Promise<Post> {
-		return this.request<Post>(`/api/v1/posts/${id}`, {
+		return this.request<Post>(`/v1/posts/${id}`, {
 			method: "PUT",
 			body: JSON.stringify(input),
 		});
 	}
 
 	async deletePost(id: string): Promise<{ deleted: boolean }> {
-		return this.request<{ deleted: boolean }>(`/api/v1/posts/${id}`, {
+		return this.request<{ deleted: boolean }>(`/v1/posts/${id}`, {
 			method: "DELETE",
 		});
 	}
@@ -214,30 +214,30 @@ export class ApiClient {
 		if (params?.postId) query.set("postId", params.postId);
 		if (params?.parentId) query.set("parentId", params.parentId);
 		return this.request<PaginatedResult<Comment>>(
-			`/api/v1/comments?${query.toString()}`,
+			`/v1/comments?${query.toString()}`,
 		);
 	}
 
 	async getComment(id: string): Promise<Comment> {
-		return this.request<Comment>(`/api/v1/comments/${id}`);
+		return this.request<Comment>(`/v1/comments/${id}`);
 	}
 
 	async createComment(input: CreateCommentInput): Promise<Comment> {
-		return this.request<Comment>("/api/v1/comments", {
+		return this.request<Comment>("/v1/comments", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
 	async updateComment(id: string, input: UpdateCommentInput): Promise<Comment> {
-		return this.request<Comment>(`/api/v1/comments/${id}`, {
+		return this.request<Comment>(`/v1/comments/${id}`, {
 			method: "PUT",
 			body: JSON.stringify(input),
 		});
 	}
 
 	async deleteComment(id: string): Promise<{ deleted: boolean }> {
-		return this.request<{ deleted: boolean }>(`/api/v1/comments/${id}`, {
+		return this.request<{ deleted: boolean }>(`/v1/comments/${id}`, {
 			method: "DELETE",
 		});
 	}

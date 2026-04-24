@@ -19,7 +19,7 @@ final class ProfileViewModel: ObservableObject {
         error = nil
 
         do {
-            let me: User = try await APIClient.shared.request(path: "/auth/me")
+            let me: User = try await APIClient.shared.request(path: "/v1/auth/me")
             user = me
         } catch let apiError as APIError {
             error = apiError.errorDescription

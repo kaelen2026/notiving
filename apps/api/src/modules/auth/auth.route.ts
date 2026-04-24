@@ -15,7 +15,7 @@ import * as authService from "./auth.service.js";
 
 const REFRESH_TOKEN_COOKIE = "refresh_token";
 const REFRESH_COOKIE_OPTIONS = {
-	path: "/api/v1/auth",
+	path: "/v1/auth",
 	httpOnly: true,
 	secure: true,
 	sameSite: "Strict" as const,
@@ -91,7 +91,7 @@ authRoute.post("/refresh", async (c) => {
 		const result = await authService.refresh(refreshToken);
 		if (!result) {
 			if (isWeb(c)) {
-				deleteCookie(c, REFRESH_TOKEN_COOKIE, { path: "/api/v1/auth" });
+				deleteCookie(c, REFRESH_TOKEN_COOKIE, { path: "/v1/auth" });
 			}
 			return fail(c, "Invalid refresh token", 401);
 		}
@@ -110,7 +110,7 @@ authRoute.post("/refresh", async (c) => {
 		return ok(c, result);
 	} catch {
 		if (isWeb(c)) {
-			deleteCookie(c, REFRESH_TOKEN_COOKIE, { path: "/api/v1/auth" });
+			deleteCookie(c, REFRESH_TOKEN_COOKIE, { path: "/v1/auth" });
 		}
 		return fail(c, "Invalid or expired refresh token", 401);
 	}
@@ -122,7 +122,7 @@ authRoute.post("/logout", authGuard, async (c) => {
 	c.get("log").info({}, "user logged out");
 
 	if (isWeb(c)) {
-		deleteCookie(c, REFRESH_TOKEN_COOKIE, { path: "/api/v1/auth" });
+		deleteCookie(c, REFRESH_TOKEN_COOKIE, { path: "/v1/auth" });
 	}
 
 	return ok(c, { message: "Logged out" });
