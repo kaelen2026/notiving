@@ -139,12 +139,7 @@ describe("Auth Service", () => {
 			const [codeRecord] = await getDb()
 				.select()
 				.from(emailVerificationCodes)
-				.where(
-					eq(
-						emailVerificationCodes.email,
-						"existing@example.com",
-					),
-				)
+				.where(eq(emailVerificationCodes.email, "existing@example.com"))
 				.limit(1);
 
 			const result = await authService.verifyEmailCode({
@@ -164,12 +159,7 @@ describe("Auth Service", () => {
 			const [codeRecord] = await getDb()
 				.select()
 				.from(emailVerificationCodes)
-				.where(
-					eq(
-						emailVerificationCodes.email,
-						"newuser@example.com",
-					),
-				)
+				.where(eq(emailVerificationCodes.email, "newuser@example.com"))
 				.limit(1);
 
 			const result = await authService.verifyEmailCode({

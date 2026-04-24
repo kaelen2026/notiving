@@ -26,7 +26,11 @@ export async function findUserByUsername(
 }
 
 export async function findUserById(id: string): Promise<UserRow | null> {
-	const [user] = await getDb().select().from(users).where(eq(users.id, id)).limit(1);
+	const [user] = await getDb()
+		.select()
+		.from(users)
+		.where(eq(users.id, id))
+		.limit(1);
 	return user ?? null;
 }
 
@@ -124,7 +128,12 @@ export async function markCodeUsed(id: string) {
 		.where(eq(emailVerificationCodes.id, id));
 }
 
-export async function upsertAccount(userId: string, provider: string, providerUserId: string, email?: string) {
+export async function upsertAccount(
+	userId: string,
+	provider: string,
+	providerUserId: string,
+	email?: string,
+) {
 	const [row] = await getDb()
 		.insert(accounts)
 		.values({ userId, provider, providerUserId, email })

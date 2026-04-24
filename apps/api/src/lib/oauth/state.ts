@@ -47,5 +47,7 @@ export async function consumeOAuthState(state: string) {
 }
 
 export async function cleanExpiredStates() {
-	await getDb().delete(oauthStates).where(lt(oauthStates.expiresAt, new Date()));
+	await getDb()
+		.delete(oauthStates)
+		.where(lt(oauthStates.expiresAt, new Date()));
 }

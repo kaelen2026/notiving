@@ -63,8 +63,10 @@ export async function register(input: RegisterInput, anonymousUserId?: string) {
 	} catch (err: unknown) {
 		const dbError = err as { code?: string; detail?: string };
 		if (dbError.code === "23505") {
-			if (dbError.detail?.includes("email")) return conflict("Email already registered");
-			if (dbError.detail?.includes("username")) return conflict("Username already taken");
+			if (dbError.detail?.includes("email"))
+				return conflict("Email already registered");
+			if (dbError.detail?.includes("username"))
+				return conflict("Username already taken");
 			return conflict("Duplicate entry");
 		}
 		throw err;
@@ -102,7 +104,11 @@ export async function getMe(userId: string) {
 	const user = await repo.findUserById(userId);
 	if (!user) return null;
 	const linkedAccounts = await repo.findAccountsByUserId(userId);
-	return { ...sanitizeUser(user), hasPassword: user.password !== null, providers: linkedAccounts };
+	return {
+		...sanitizeUser(user),
+		hasPassword: user.password !== null,
+		providers: linkedAccounts,
+	};
 }
 
 export async function createAnonymousUser() {
@@ -111,24 +117,40 @@ export async function createAnonymousUser() {
 }
 
 export async function sendEmailCode(email: string) {
-	const recent = await repo.findRecentCode(email, new Date(Date.now() - 60_000));
+	const recent = await repo.findRecentCode(
+		email,
+		new Date(Date.now() - 60_000),
+	);
 	if (recent) {
-		throw new HTTPException(429, { message: "Please wait before requesting another code" });
+		throw new HTTPException(429, {
+			message: "Please wait before requesting another code",
+		});
 	}
-	const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1000000).padStart(6, "0");
+	const code = String(
+		crypto.getRandomValues(new Uint32Array(1))[0] % 1000000,
+	).padStart(6, "0");
 	const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 	await repo.insertEmailCode(email, code, expiresAt);
-	await sendEmail(email, "Your verification code", `Your verification code is: ${code}`);
+	await sendEmail(
+		email,
+		"Your verification code",
+		`Your verification code is: ${code}`,
+	);
 	return { message: "Verification code sent" };
 }
 
-export async function verifyEmailCode(input: VerifyEmailCodeInput, anonymousUserId?: string) {
+export async function verifyEmailCode(
+	input: VerifyEmailCodeInput,
+	anonymousUserId?: string,
+) {
 	const record = await repo.findLatestValidCode(input.email);
 	if (!record) return null;
 
 	if (record.attempts >= 5) {
 		await repo.markCodeUsed(record.id);
-		throw new HTTPException(400, { message: "Too many attempts, please request a new code" });
+		throw new HTTPException(400, {
+			message: "Too many attempts, please request a new code",
+		});
 	}
 	if (record.code !== input.code) {
 		await repo.incrementCodeAttempts(record.id);
@@ -138,8 +160,16 @@ export async function verifyEmailCode(input: VerifyEmailCodeInput, anonymousUser
 
 	const existingUser = await repo.findUserByEmail(input.email);
 	if (existingUser) {
-		await repo.upsertAccount(existingUser.id, "email", input.email, input.email);
-		return { user: sanitizeUser(existingUser), ...(await issueTokens(existingUser)) };
+		await repo.upsertAccount(
+			existingUser.id,
+			"email",
+			input.email,
+			input.email,
+		);
+		return {
+			user: sanitizeUser(existingUser),
+			...(await issueTokens(existingUser)),
+		};
 	}
 
 	if (anonymousUserId) {

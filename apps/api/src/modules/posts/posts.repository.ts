@@ -24,7 +24,11 @@ export async function listPosts(
 }
 
 export async function findPostById(id: string): Promise<PostRow | null> {
-	const [post] = await getDb().select().from(posts).where(eq(posts.id, id)).limit(1);
+	const [post] = await getDb()
+		.select()
+		.from(posts)
+		.where(eq(posts.id, id))
+		.limit(1);
 	return post ?? null;
 }
 

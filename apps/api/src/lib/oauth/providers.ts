@@ -26,7 +26,11 @@ let _apple: arctic.Apple | null | undefined;
 function getGoogleProvider(): arctic.Google | null {
 	if (_google === undefined) {
 		const env = getEnv();
-		if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.OAUTH_REDIRECT_BASE_URL) {
+		if (
+			!env.GOOGLE_CLIENT_ID ||
+			!env.GOOGLE_CLIENT_SECRET ||
+			!env.OAUTH_REDIRECT_BASE_URL
+		) {
 			_google = null;
 		} else {
 			_google = new arctic.Google(
@@ -42,7 +46,13 @@ function getGoogleProvider(): arctic.Google | null {
 function getAppleProvider(): arctic.Apple | null {
 	if (_apple === undefined) {
 		const env = getEnv();
-		if (!env.APPLE_CLIENT_ID || !env.APPLE_TEAM_ID || !env.APPLE_KEY_ID || !env.APPLE_PRIVATE_KEY || !env.OAUTH_REDIRECT_BASE_URL) {
+		if (
+			!env.APPLE_CLIENT_ID ||
+			!env.APPLE_TEAM_ID ||
+			!env.APPLE_KEY_ID ||
+			!env.APPLE_PRIVATE_KEY ||
+			!env.OAUTH_REDIRECT_BASE_URL
+		) {
 			_apple = null;
 		} else {
 			_apple = new arctic.Apple(

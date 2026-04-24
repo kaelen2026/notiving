@@ -1,7 +1,7 @@
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
-import type { LoggerInstance } from "../lib/logger.js";
 import { verifyAccessToken } from "../lib/jwt.js";
+import type { LoggerInstance } from "../lib/logger.js";
 import { findUserIsAnonymous } from "../modules/auth/auth.repository.js";
 
 export type AuthEnv = {
@@ -28,7 +28,9 @@ export const authGuard = createMiddleware<Env>(async (c, next) => {
 	}
 });
 
-export async function tryExtractUserId(header: string | undefined): Promise<string | null> {
+export async function tryExtractUserId(
+	header: string | undefined,
+): Promise<string | null> {
 	if (!header?.startsWith("Bearer ")) return null;
 	try {
 		const payload = await verifyAccessToken(header.slice(7));
