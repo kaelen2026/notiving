@@ -12,6 +12,14 @@
 				<string>notiving</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Google OAuth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.171619038303-thlmmi0om9llg4ob97nujfp6uajl5nfs</string>
+			</array>
+		</dict>
 	</array>
 	<key>RCTNewArchEnabled</key>
 	<true/>

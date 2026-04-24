@@ -18,6 +18,10 @@ export const oauthTokenBody = z.object({
 		.optional(),
 });
 
+export const oauthNativeTokenBody = z.object({
+	accessToken: z.string().min(1),
+});
+
 export const linkPasswordBody = z.object({
 	password: z.string().min(8).max(128),
 });

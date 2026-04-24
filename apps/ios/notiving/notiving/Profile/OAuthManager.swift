@@ -1,5 +1,6 @@
 import AuthenticationServices
 import Combine
+import CryptoKit
 import Foundation
 import SwiftUI
 
@@ -9,14 +10,54 @@ final class OAuthManager: NSObject, ObservableObject, ASWebAuthenticationPresent
     private var webAuthSession: ASWebAuthenticationSession?
     private var appleSignInContinuation: CheckedContinuation<ASAuthorization, Error>?
 
+    private static let googleClientID = "171619038303-thlmmi0om9llg4ob97nujfp6uajl5nfs.apps.googleusercontent.com"
+    private static let googleRedirectURI = "com.googleusercontent.apps.171619038303-thlmmi0om9llg4ob97nujfp6uajl5nfs:/oauth/callback"
+    private static let googleCallbackScheme = "com.googleusercontent.apps.171619038303-thlmmi0om9llg4ob97nujfp6uajl5nfs"
+
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         presentationWindow
     }
 
     func signInWithGoogle() async throws -> (User, String) {
-        let authURL = try await fetchAuthorizationURL(provider: "google")
-        let callbackURL = try await openAuthSession(url: authURL)
-        return try await handleCallback(callbackURL)
+        let codeVerifier = generateCodeVerifier()
+        let codeChallenge = generateCodeChallenge(from: codeVerifier)
+        let state = UUID().uuidString
+
+        var components = URLComponents(string: "https://accounts.google.com/o/oauth2/v2/auth")!
+        components.queryItems = [
+            URLQueryItem(name: "client_id", value: Self.googleClientID),
+            URLQueryItem(name: "redirect_uri", value: Self.googleRedirectURI),
+            URLQueryItem(name: "response_type", value: "code"),
+            URLQueryItem(name: "scope", value: "openid email profile"),
+            URLQueryItem(name: "code_challenge", value: codeChallenge),
+            URLQueryItem(name: "code_challenge_method", value: "S256"),
+            URLQueryItem(name: "state", value: state),
+        ]
+
+        let authURL = components.url!
+        let callbackURL = try await openGoogleAuthSession(url: authURL)
+
+        guard let cbComponents = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false),
+              let returnedState = cbComponents.queryItems?.first(where: { $0.name == "state" })?.value,
+              returnedState == state,
+              let code = cbComponents.queryItems?.first(where: { $0.name == "code" })?.value else {
+            throw OAuthError.missingToken
+        }
+
+        let accessToken = try await exchangeGoogleCode(code, codeVerifier: codeVerifier)
+
+        let body = try JSONSerialization.data(withJSONObject: ["accessToken": accessToken])
+        let result: LoginResponse = try await APIClient.shared.request(
+            path: "/v1/auth/oauth/google/native-token",
+            method: "POST",
+            body: body,
+            authenticated: false
+        )
+
+        SessionManager.shared.accessToken = result.accessToken
+        SessionManager.shared.refreshToken = result.refreshToken
+        SessionManager.shared.userId = result.user.id
+        return (result.user, result.accessToken)
     }
 
     func signInWithApple() async throws -> (User, String) {
@@ -54,22 +95,11 @@ final class OAuthManager: NSObject, ObservableObject, ASWebAuthenticationPresent
 
     // MARK: - Google helpers
 
-    private func fetchAuthorizationURL(provider: String) async throws -> URL {
-        let response: OAuthInitiateResponse = try await APIClient.shared.request(
-            path: "/v1/auth/oauth/\(provider)?redirect_uri=notiving://oauth/callback",
-            authenticated: false
-        )
-        guard let url = URL(string: response.authorizationUrl) else {
-            throw OAuthError.invalidURL
-        }
-        return url
-    }
-
-    private func openAuthSession(url: URL) async throws -> URL {
+    private func openGoogleAuthSession(url: URL) async throws -> URL {
         try await withCheckedThrowingContinuation { continuation in
             let session = ASWebAuthenticationSession(
                 url: url,
-                callbackURLScheme: "notiving"
+                callbackURLScheme: Self.googleCallbackScheme
             ) { callbackURL, error in
                 if let error {
                     continuation.resume(throwing: error)
@@ -86,22 +116,42 @@ final class OAuthManager: NSObject, ObservableObject, ASWebAuthenticationPresent
         }
     }
 
-    private func handleCallback(_ url: URL) async throws -> (User, String) {
-        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let accessToken = components.queryItems?.first(where: { $0.name == "accessToken" })?.value else {
+    private func exchangeGoogleCode(_ code: String, codeVerifier: String) async throws -> String {
+        let tokenURL = URL(string: "https://oauth2.googleapis.com/token")!
+        var request = URLRequest(url: tokenURL)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+
+        let params = [
+            "client_id": Self.googleClientID,
+            "code": code,
+            "code_verifier": codeVerifier,
+            "grant_type": "authorization_code",
+            "redirect_uri": Self.googleRedirectURI,
+        ]
+        request.httpBody = params
+            .map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? $0.value)" }
+            .joined(separator: "&")
+            .data(using: .utf8)
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        guard let accessToken = json?["access_token"] as? String else {
             throw OAuthError.missingToken
         }
+        return accessToken
+    }
 
-        let refreshToken = components.queryItems?.first(where: { $0.name == "refreshToken" })?.value
+    private func generateCodeVerifier() -> String {
+        var bytes = [UInt8](repeating: 0, count: 32)
+        _ = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+        return Data(bytes).base64URLEncodedString()
+    }
 
-        SessionManager.shared.accessToken = accessToken
-        if let refreshToken {
-            SessionManager.shared.refreshToken = refreshToken
-        }
-
-        let user: User = try await APIClient.shared.request(path: "/v1/auth/me")
-        SessionManager.shared.userId = user.id
-        return (user, accessToken)
+    private func generateCodeChallenge(from verifier: String) -> String {
+        let data = Data(verifier.utf8)
+        let hash = SHA256.hash(data: data)
+        return Data(hash).base64URLEncodedString()
     }
 
     // MARK: - Apple helpers
@@ -157,6 +207,15 @@ private extension OAuthManager {
     }
 }
 
+private extension Data {
+    func base64URLEncodedString() -> String {
+        base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+    }
+}
+
 // MARK: - Types
 
 enum OAuthError: LocalizedError {
@@ -173,8 +232,4 @@ enum OAuthError: LocalizedError {
         case .missingCredential: return "Missing Apple credential"
         }
     }
-}
-
-private struct OAuthInitiateResponse: Decodable {
-    let authorizationUrl: String
 }

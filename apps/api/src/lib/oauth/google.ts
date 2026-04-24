@@ -1,4 +1,5 @@
 import type * as arctic from "arctic";
+import { getEnv } from "../../config/env.js";
 import type { OAuthProvider } from "./providers.js";
 import { getProvider } from "./providers.js";
 
@@ -55,5 +56,50 @@ export async function handleGoogleCallback(
 		accessToken,
 		refreshToken: tokens.hasRefreshToken() ? tokens.refreshToken() : null,
 		expiresAt: tokens.accessTokenExpiresAt(),
+	};
+}
+
+export async function handleGoogleAccessToken(
+	accessToken: string,
+): Promise<OAuthProfile> {
+	const tokenInfoRes = await fetch(
+		`https://oauth2.googleapis.com/tokeninfo?access_token=${accessToken}`,
+	);
+	if (!tokenInfoRes.ok) {
+		throw new Error("Google token validation failed");
+	}
+	const tokenInfo = (await tokenInfoRes.json()) as { aud: string };
+
+	const env = getEnv();
+	const allowedClientIds = [
+		env.GOOGLE_CLIENT_ID,
+		env.GOOGLE_IOS_CLIENT_ID,
+	].filter(Boolean);
+	if (!allowedClientIds.includes(tokenInfo.aud)) {
+		throw new Error("Google token audience mismatch");
+	}
+
+	const res = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+		headers: { Authorization: `Bearer ${accessToken}` },
+	});
+	if (!res.ok) {
+		throw new Error(`Google userinfo request failed: ${res.status}`);
+	}
+	const userinfo = (await res.json()) as {
+		sub: string;
+		email?: string;
+		name?: string;
+		picture?: string;
+	};
+
+	return {
+		provider: "google",
+		providerUserId: userinfo.sub,
+		email: userinfo.email ?? null,
+		displayName: userinfo.name ?? null,
+		avatarUrl: userinfo.picture ?? null,
+		accessToken,
+		refreshToken: null,
+		expiresAt: null,
 	};
 }

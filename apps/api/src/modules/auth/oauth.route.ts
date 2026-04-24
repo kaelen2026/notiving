@@ -10,6 +10,7 @@ import {
 import type { OAuthProfile } from "../../lib/oauth/google.js";
 import {
 	getGoogleAuthorizationUrl,
+	handleGoogleAccessToken,
 	handleGoogleCallback,
 } from "../../lib/oauth/google.js";
 import { isOAuthProvider } from "../../lib/oauth/providers.js";
@@ -25,6 +26,7 @@ import {
 import {
 	linkPasswordBody,
 	oauthInitiateQuery,
+	oauthNativeTokenBody,
 	oauthTokenBody,
 } from "./oauth.schema.js";
 import * as oauthService from "./oauth.service.js";
@@ -228,6 +230,25 @@ oauthRoute.post("/oauth/:provider/callback", async (c) => {
 
 	return ok(c, result);
 });
+
+oauthRoute.post(
+	"/oauth/google/native-token",
+	zValidator("json", oauthNativeTokenBody),
+	async (c) => {
+		const { accessToken } = c.req.valid("json");
+		const anonymousUserId =
+			(await tryExtractUserId(c.req.header("Authorization"))) ?? undefined;
+
+		const profile = await handleGoogleAccessToken(accessToken);
+		const result = await oauthService.handleOAuthUser(profile, anonymousUserId);
+		c.get("log").info(
+			{ userId: result.user.id, provider: "google" },
+			"google native token login",
+		);
+
+		return ok(c, result);
+	},
+);
 
 oauthRoute.post(
 	"/oauth/:provider/token",

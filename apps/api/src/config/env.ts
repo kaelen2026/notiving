@@ -14,6 +14,7 @@ const envSchema = z.object({
 		.transform((val) => val?.split(",").map((o) => o.trim()) ?? []),
 	GOOGLE_CLIENT_ID: z.string().min(1).optional(),
 	GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+	GOOGLE_IOS_CLIENT_ID: z.string().min(1).optional(),
 	APPLE_CLIENT_ID: z.string().min(1).optional(),
 	APPLE_TEAM_ID: z.string().min(1).optional(),
 	APPLE_KEY_ID: z.string().min(1).optional(),
