@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api, ApiError } from "@/lib/api";
-import { setAccessToken } from "@/lib/auth";
+import { ApiError } from "@notiving/shared";
+import { apiClient, setAccessToken } from "@/lib/api";
 
 type LoginMode = "otp" | "password";
 
@@ -56,10 +56,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      await api("/auth/email/send-code", {
-        method: "POST",
-        body: JSON.stringify({ email: email.trim() }),
-      });
+      await apiClient.sendEmailCode({ email: email.trim() });
       setStep("code");
       setCountdown(60);
       setTimeout(() => codeRefs.current[0]?.focus(), 100);
@@ -81,10 +78,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      const result = await api<AuthResult>("/auth/email/verify-code", {
-        method: "POST",
-        body: JSON.stringify({ email: email.trim(), code: codeStr }),
-      });
+      const result = await apiClient.verifyEmailCode({ email: email.trim(), code: codeStr });
       setAccessToken(result.accessToken);
       router.replace("/");
     } catch (err) {
@@ -102,10 +96,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      const result = await api<AuthResult>("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email: email.trim(), password }),
-      });
+      const result = await apiClient.login({ email: email.trim(), password });
       setAccessToken(result.accessToken);
       router.replace("/");
     } catch (err) {

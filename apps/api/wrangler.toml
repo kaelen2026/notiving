@@ -6,6 +6,10 @@ compatibility_flags = ["nodejs_compat"]
 [observability]
 enabled = true
 
+[vars]
+NODE_ENV = "production"
+CORS_ORIGIN = "https://notiving.com,https://h5.notiving.com"
+
 [[routes]]
 pattern = "api.notiving.com/*"
 zone_name = "notiving.com"

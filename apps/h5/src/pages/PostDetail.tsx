@@ -12,11 +12,7 @@ export default function PostDetail() {
   } = useQuery({
     queryKey: ["post", id],
     queryFn: async () => {
-      const res = await apiClient.getPost(id!);
-      if (!res.success || !res.data) {
-        throw new Error(res.error ?? "Post not found");
-      }
-      return res.data;
+      return apiClient.getPost(id!);
     },
     enabled: !!id,
   });

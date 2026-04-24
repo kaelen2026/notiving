@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { tryRestoreSession, clearAccessToken, fetchWithAuth } from "@/lib/auth";
+import { apiClient, clearAccessToken } from "@/lib/api";
 
 interface User {
   id: string;
@@ -17,14 +17,11 @@ export default function Home() {
 
   useEffect(() => {
     (async () => {
-      const token = await tryRestoreSession();
+      const token = await apiClient.tryRestoreSession();
       if (token) {
         try {
-          const res = await fetchWithAuth("/auth/me");
-          const json = await res.json();
-          if (json.success && json.data) {
-            setUser(json.data);
-          }
+          const me = await apiClient.getMe();
+          setUser(me);
         } catch {
           // session invalid
         }
@@ -35,7 +32,7 @@ export default function Home() {
 
   const handleLogout = async () => {
     try {
-      await fetchWithAuth("/auth/logout", { method: "POST" });
+      await apiClient.logout();
     } catch {
       // best effort
     }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ApiError } from "@notiving/shared";
 import { apiClient, setAuthTokens } from "../lib/api";
 
 type LoginMode = "otp" | "password";
@@ -46,13 +47,12 @@ export default function Login() {
   const handleSendCode = useCallback(async () => {
     setLoading(true); setError("");
     try {
-      const res = await apiClient.sendEmailCode({ email: email.trim() });
-      if (!res.success) throw new Error(res.error ?? "Failed to send code");
+      await apiClient.sendEmailCode({ email: email.trim() });
       setStep("code");
       setCountdown(60);
       setTimeout(() => codeRefs.current[0]?.focus(), 100);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to send code");
+      setError(err instanceof ApiError ? err.message : "Failed to send code");
     } finally {
       setLoading(false);
     }
@@ -63,11 +63,10 @@ export default function Login() {
     if (codeStr.length !== 6) return;
     setLoading(true); setError("");
     try {
-      const res = await apiClient.verifyEmailCode({ email: email.trim(), code: codeStr });
-      if (!res.success || !res.data) throw new Error(res.error ?? "Verification failed");
-      onLoginSuccess(res.data.accessToken, res.data.refreshToken);
+      const result = await apiClient.verifyEmailCode({ email: email.trim(), code: codeStr });
+      onLoginSuccess(result.accessToken, result.refreshToken);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Verification failed");
+      setError(err instanceof ApiError ? err.message : "Verification failed");
     } finally {
       setLoading(false);
     }
@@ -76,11 +75,10 @@ export default function Login() {
   const handlePasswordLogin = useCallback(async () => {
     setLoading(true); setError("");
     try {
-      const res = await apiClient.login({ email: email.trim(), password });
-      if (!res.success || !res.data) throw new Error(res.error ?? "Login failed");
-      onLoginSuccess(res.data.accessToken, res.data.refreshToken);
+      const result = await apiClient.login({ email: email.trim(), password });
+      onLoginSuccess(result.accessToken, result.refreshToken);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof ApiError ? err.message : "Login failed");
     } finally {
       setLoading(false);
     }

@@ -6,7 +6,10 @@ import type {
 	Comment,
 	AuthResponse,
 	RefreshResponse,
-} from "@notiving/shared/types";
+	TokenProvider,
+	ApiClientConfig,
+} from "./types/api.js";
+import { ApiError } from "./types/api.js";
 import type {
 	RegisterInput,
 	LoginInput,
@@ -17,90 +20,124 @@ import type {
 	CreateCommentInput,
 	UpdateCommentInput,
 	UpdateUserInput,
-} from "@notiving/shared/schemas";
+} from "./schemas/index.js";
+
+export { ApiError };
 
 export class ApiClient {
-	private baseUrl: string;
-	private accessToken: string | null = null;
+	private readonly baseUrl: string;
+	private readonly tokenProvider?: TokenProvider;
+	private readonly deviceType?: string;
+	private readonly credentials?: RequestCredentials;
+	private refreshPromise: Promise<string | null> | null = null;
 
-	constructor(baseUrl: string) {
-		this.baseUrl = baseUrl;
-	}
-
-	setAccessToken(token: string) {
-		this.accessToken = token;
-	}
-
-	clearAccessToken() {
-		this.accessToken = null;
+	constructor(config: ApiClientConfig) {
+		this.baseUrl = config.baseUrl;
+		this.tokenProvider = config.tokenProvider;
+		this.deviceType = config.deviceType;
+		this.credentials = config.credentials;
 	}
 
 	private async request<T>(
 		path: string,
 		options: RequestInit = {},
-	): Promise<ApiResponse<T>> {
-		const headers: Record<string, string> = {
-			"Content-Type": "application/json",
-			...(options.headers as Record<string, string>),
+	): Promise<T> {
+		const doFetch = (token: string | null): Promise<Response> => {
+			const headers: Record<string, string> = {
+				"Content-Type": "application/json",
+				...(options.headers as Record<string, string>),
+			};
+			if (this.deviceType) {
+				headers["X-Device-Type"] = this.deviceType;
+			}
+			if (token) {
+				headers["Authorization"] = `Bearer ${token}`;
+			}
+			return fetch(`${this.baseUrl}${path}`, {
+				...options,
+				headers,
+				...(this.credentials ? { credentials: this.credentials } : {}),
+			});
 		};
 
-		if (this.accessToken) {
-			headers.Authorization = `Bearer ${this.accessToken}`;
+		const token = this.tokenProvider?.getAccessToken() ?? null;
+		let res = await doFetch(token);
+
+		if (res.status === 401 && this.tokenProvider && token) {
+			if (!this.refreshPromise) {
+				this.refreshPromise = this.tokenProvider.refresh().finally(() => {
+					this.refreshPromise = null;
+				});
+			}
+			const newToken = await this.refreshPromise;
+			if (newToken) {
+				res = await doFetch(newToken);
+			} else {
+				this.tokenProvider.onAuthFailure?.();
+				throw new ApiError(401, "Session expired");
+			}
 		}
 
-		const response = await fetch(`${this.baseUrl}${path}`, {
-			...options,
-			headers,
-		});
+		const json: ApiResponse<T> = await res.json();
 
-		return response.json();
+		if (!res.ok || !json.success) {
+			throw new ApiError(res.status, json.error ?? json.message ?? "Unknown error");
+		}
+
+		return json.data as T;
+	}
+
+	async tryRestoreSession(): Promise<string | null> {
+		if (!this.tokenProvider) return null;
+		const existing = this.tokenProvider.getAccessToken();
+		if (existing) return existing;
+		return this.tokenProvider.refresh();
 	}
 
 	// Auth
-	async register(input: RegisterInput): Promise<ApiResponse<AuthResponse>> {
+	async register(input: RegisterInput): Promise<AuthResponse> {
 		return this.request<AuthResponse>("/api/v1/auth/register", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
-	async login(input: LoginInput): Promise<ApiResponse<AuthResponse>> {
+	async login(input: LoginInput): Promise<AuthResponse> {
 		return this.request<AuthResponse>("/api/v1/auth/login", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
-	async refresh(refreshToken: string): Promise<ApiResponse<RefreshResponse>> {
-		return this.request<RefreshResponse>("/api/v1/auth/refresh", {
-			method: "POST",
-			body: JSON.stringify({ refreshToken }),
-		});
-	}
-
-	async sendEmailCode(input: SendEmailCodeInput): Promise<ApiResponse<{ message: string }>> {
+	async sendEmailCode(input: SendEmailCodeInput): Promise<{ message: string }> {
 		return this.request<{ message: string }>("/api/v1/auth/email/send-code", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
-	async verifyEmailCode(input: VerifyEmailCodeInput): Promise<ApiResponse<AuthResponse>> {
+	async verifyEmailCode(input: VerifyEmailCodeInput): Promise<AuthResponse> {
 		return this.request<AuthResponse>("/api/v1/auth/email/verify-code", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
-	async getMe(): Promise<ApiResponse<User>> {
+	async getMe(): Promise<User> {
 		return this.request<User>("/api/v1/auth/me");
+	}
+
+	async logout(): Promise<void> {
+		await this.request<{ message: string }>("/api/v1/auth/logout", {
+			method: "POST",
+		});
 	}
 
 	// Users
 	async listUsers(params?: {
 		cursor?: string;
 		limit?: number;
-	}): Promise<ApiResponse<PaginatedResult<User>>> {
+	}): Promise<PaginatedResult<User>> {
 		const query = new URLSearchParams();
 		if (params?.cursor) query.set("cursor", params.cursor);
 		if (params?.limit) query.set("limit", params.limit.toString());
@@ -109,21 +146,18 @@ export class ApiClient {
 		);
 	}
 
-	async getUser(id: string): Promise<ApiResponse<User>> {
+	async getUser(id: string): Promise<User> {
 		return this.request<User>(`/api/v1/users/${id}`);
 	}
 
-	async updateUser(
-		id: string,
-		input: UpdateUserInput,
-	): Promise<ApiResponse<User>> {
+	async updateUser(id: string, input: UpdateUserInput): Promise<User> {
 		return this.request<User>(`/api/v1/users/${id}`, {
 			method: "PUT",
 			body: JSON.stringify(input),
 		});
 	}
 
-	async deleteUser(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
+	async deleteUser(id: string): Promise<{ deleted: boolean }> {
 		return this.request<{ deleted: boolean }>(`/api/v1/users/${id}`, {
 			method: "DELETE",
 		});
@@ -134,7 +168,7 @@ export class ApiClient {
 		cursor?: string;
 		limit?: number;
 		authorId?: string;
-	}): Promise<ApiResponse<PaginatedResult<Post>>> {
+	}): Promise<PaginatedResult<Post>> {
 		const query = new URLSearchParams();
 		if (params?.cursor) query.set("cursor", params.cursor);
 		if (params?.limit) query.set("limit", params.limit.toString());
@@ -144,28 +178,25 @@ export class ApiClient {
 		);
 	}
 
-	async getPost(id: string): Promise<ApiResponse<Post>> {
+	async getPost(id: string): Promise<Post> {
 		return this.request<Post>(`/api/v1/posts/${id}`);
 	}
 
-	async createPost(input: CreatePostInput): Promise<ApiResponse<Post>> {
+	async createPost(input: CreatePostInput): Promise<Post> {
 		return this.request<Post>("/api/v1/posts", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
-	async updatePost(
-		id: string,
-		input: UpdatePostInput,
-	): Promise<ApiResponse<Post>> {
+	async updatePost(id: string, input: UpdatePostInput): Promise<Post> {
 		return this.request<Post>(`/api/v1/posts/${id}`, {
 			method: "PUT",
 			body: JSON.stringify(input),
 		});
 	}
 
-	async deletePost(id: string): Promise<ApiResponse<{ deleted: boolean }>> {
+	async deletePost(id: string): Promise<{ deleted: boolean }> {
 		return this.request<{ deleted: boolean }>(`/api/v1/posts/${id}`, {
 			method: "DELETE",
 		});
@@ -177,7 +208,7 @@ export class ApiClient {
 		limit?: number;
 		postId?: string;
 		parentId?: string;
-	}): Promise<ApiResponse<PaginatedResult<Comment>>> {
+	}): Promise<PaginatedResult<Comment>> {
 		const query = new URLSearchParams();
 		if (params?.cursor) query.set("cursor", params.cursor);
 		if (params?.limit) query.set("limit", params.limit.toString());
@@ -188,38 +219,27 @@ export class ApiClient {
 		);
 	}
 
-	async getComment(id: string): Promise<ApiResponse<Comment>> {
+	async getComment(id: string): Promise<Comment> {
 		return this.request<Comment>(`/api/v1/comments/${id}`);
 	}
 
-	async createComment(
-		input: CreateCommentInput,
-	): Promise<ApiResponse<Comment>> {
+	async createComment(input: CreateCommentInput): Promise<Comment> {
 		return this.request<Comment>("/api/v1/comments", {
 			method: "POST",
 			body: JSON.stringify(input),
 		});
 	}
 
-	async updateComment(
-		id: string,
-		input: UpdateCommentInput,
-	): Promise<ApiResponse<Comment>> {
+	async updateComment(id: string, input: UpdateCommentInput): Promise<Comment> {
 		return this.request<Comment>(`/api/v1/comments/${id}`, {
 			method: "PUT",
 			body: JSON.stringify(input),
 		});
 	}
 
-	async deleteComment(
-		id: string,
-	): Promise<ApiResponse<{ deleted: boolean }>> {
+	async deleteComment(id: string): Promise<{ deleted: boolean }> {
 		return this.request<{ deleted: boolean }>(`/api/v1/comments/${id}`, {
 			method: "DELETE",
 		});
 	}
 }
-
-export const apiClient = new ApiClient(
-	import.meta.env.VITE_API_URL || "http://localhost:3001",
-);

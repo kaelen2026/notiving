@@ -59,3 +59,28 @@ export interface RefreshResponse {
 	accessToken: string;
 	refreshToken: string;
 }
+
+export class ApiError extends Error {
+	public readonly status: number;
+
+	constructor(status: number, message: string) {
+		super(message);
+		this.name = "ApiError";
+		this.status = status;
+	}
+}
+
+export interface TokenProvider {
+	getAccessToken(): string | null;
+	setAccessToken(token: string): void;
+	clearAccessToken(): void;
+	refresh(): Promise<string | null>;
+	onAuthFailure?(): void;
+}
+
+export interface ApiClientConfig {
+	baseUrl: string;
+	tokenProvider?: TokenProvider;
+	deviceType?: string;
+	credentials?: RequestCredentials;
+}
