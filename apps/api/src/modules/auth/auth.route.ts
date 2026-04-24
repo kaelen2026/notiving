@@ -12,21 +12,13 @@ import {
 	verifyEmailCodeSchema,
 } from "./auth.schema.js";
 import * as authService from "./auth.service.js";
-
-const REFRESH_TOKEN_COOKIE = "refresh_token";
-const REFRESH_COOKIE_OPTIONS = {
-	path: "/v1/auth",
-	httpOnly: true,
-	secure: true,
-	sameSite: "Strict" as const,
-	maxAge: 7 * 24 * 60 * 60,
-};
+import {
+	isWeb,
+	REFRESH_COOKIE_OPTIONS,
+	REFRESH_TOKEN_COOKIE,
+} from "./auth.utils.js";
 
 export const authRoute = new Hono<AppEnv>();
-
-function isWeb(c: { get: (key: "deviceType") => string }) {
-	return c.get("deviceType") === "web";
-}
 
 authRoute.post("/register", zValidator("json", registerSchema), async (c) => {
 	const input = c.req.valid("json");

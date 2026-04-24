@@ -18,26 +18,18 @@ import { authGuard, tryExtractUserId } from "../../middleware/auth.js";
 import type { AppEnv } from "../../types/env.js";
 import * as authService from "./auth.service.js";
 import {
+	isWeb,
+	REFRESH_COOKIE_OPTIONS,
+	REFRESH_TOKEN_COOKIE,
+} from "./auth.utils.js";
+import {
 	linkPasswordBody,
 	oauthInitiateQuery,
 	oauthTokenBody,
 } from "./oauth.schema.js";
 import * as oauthService from "./oauth.service.js";
 
-const REFRESH_TOKEN_COOKIE = "refresh_token";
-const REFRESH_COOKIE_OPTIONS = {
-	path: "/v1/auth",
-	httpOnly: true,
-	secure: true,
-	sameSite: "Strict" as const,
-	maxAge: 7 * 24 * 60 * 60,
-};
-
 export const oauthRoute = new Hono<AppEnv>();
-
-function isWeb(c: { get: (key: "deviceType") => string }) {
-	return c.get("deviceType") === "web";
-}
 
 oauthRoute.post("/anonymous", async (c) => {
 	const result = await authService.createAnonymousUser();
@@ -124,7 +116,10 @@ oauthRoute.get("/oauth/:provider/callback", async (c) => {
 
 	let profile: OAuthProfile;
 	if (provider === "google") {
-		profile = await handleGoogleCallback(code, stored.codeVerifier!);
+		if (!stored.codeVerifier) {
+			return fail(c, "Missing code verifier for Google OAuth", 400);
+		}
+		profile = await handleGoogleCallback(code, stored.codeVerifier);
 	} else {
 		profile = await handleAppleCallback(code);
 	}
@@ -197,7 +192,10 @@ oauthRoute.post("/oauth/:provider/callback", async (c) => {
 		}
 		profile = await handleAppleCallback(code, firstName, lastName);
 	} else {
-		profile = await handleGoogleCallback(code, stored.codeVerifier!);
+		if (!stored.codeVerifier) {
+			return fail(c, "Missing code verifier for Google OAuth", 400);
+		}
+		profile = await handleGoogleCallback(code, stored.codeVerifier);
 	}
 
 	const result = await oauthService.handleOAuthUser(profile, anonymousUserId);
