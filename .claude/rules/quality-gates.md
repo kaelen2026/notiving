@@ -2,10 +2,11 @@
 
 ## Pre-commit Checks
 
-All commits must pass these automated checks (enforced via Husky hooks):
+All commits must pass these automated checks (enforced via Husky hooks in `.husky/`):
 
 - **Commit message format** — Conventional Commits via commitlint (`feat:`, `fix:`, `chore:`, etc.)
-- **Staged files only** — hooks run on staged changes, not entire workspace
+- **Lint + Typecheck** — `pnpm turbo lint typecheck` runs on every commit (turbo caching makes unchanged projects instant)
+- **Native builds** — when `apps/android/` or `apps/ios/` files are staged, Gradle `assembleDebug` or `xcodebuild` runs automatically
 
 ## Pre-push / CI Checks
 
@@ -15,12 +16,13 @@ Before merging to main, all changes must pass:
 
 ```bash
 # Root level - check all workspaces
-pnpm turbo run build --dry-run=json  # verifies tsc passes in all apps
+pnpm turbo typecheck
 
 # Per-app verification
-pnpm --filter @notiving/api exec tsc --noEmit
-pnpm --filter h5 exec tsc -b
-pnpm --filter web exec tsc --noEmit
+pnpm --filter @notiving/api run typecheck
+pnpm --filter h5 run typecheck
+pnpm --filter web run typecheck
+pnpm --filter rn run typecheck
 ```
 
 **Gate**: Zero TypeScript errors. No `any`, no `@ts-ignore`.
@@ -125,7 +127,7 @@ These gates ensure each task is properly scoped and independently verifiable.
 - [ ] All acceptance criteria met and verifiable
 - [ ] Verification steps completed (automated + manual + edge cases)
 - [ ] PR template (`.github/pull_request_template.md`) filled out completely
-- [ ] All quality gates pass: `pnpm turbo run lint test build`
+- [ ] All quality gates pass: `pnpm turbo run lint typecheck test build`
 - [ ] Manual test steps documented for reviewers
 - [ ] Edge cases identified and tested
 - [ ] No decrease in test coverage
@@ -189,12 +191,12 @@ Before pushing:
 
 ```bash
 # Quick check (web/API apps only)
-pnpm lint && pnpm test
+pnpm lint && pnpm typecheck && pnpm test
 
 # Full gate simulation (what CI will run)
-pnpm turbo run lint test build
+pnpm turbo run lint typecheck test build
 
-# Native apps (run only if you modified them)
+# Native apps (run only if you modified them — pre-commit hook does this automatically)
 cd apps/ios/notiving && xcodebuild -project notiving.xcodeproj -scheme notiving -configuration Debug -destination 'generic/platform=iOS' build
 cd apps/android && ./gradlew compileDebugKotlin
 cd apps/harmony && ./hvigorw assembleHap --mode module -p product=default
@@ -207,7 +209,7 @@ cd apps/harmony && ./hvigorw assembleHap --mode module -p product=default
 - [ ] Add performance budgets (Lighthouse CI)
 - [ ] Add visual regression tests (Chromatic or Percy)
 - [ ] Add security scanning (npm audit, Snyk)
-- [ ] Add pre-push hook to run tests locally
-- [ ] Integrate native app builds into CI (conditional on path changes)
+- [x] ~~Add pre-push hook to run tests locally~~ (pre-commit hook runs lint + typecheck)
+- [x] ~~Integrate native app builds into CI (conditional on path changes)~~ (pre-commit hook detects android/ios changes)
 - [ ] Add unit tests for native apps (XCTest for iOS, JUnit for Android)
 - [ ] Add Flutter build verification (`flutter build apk --release`)
