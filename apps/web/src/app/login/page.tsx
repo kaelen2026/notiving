@@ -1,21 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ApiError } from "@notiving/shared";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { apiClient, setAccessToken } from "@/lib/api";
 
 type LoginMode = "otp" | "password";
-
-interface AuthResult {
-  user: {
-    id: string;
-    username: string | null;
-    email: string | null;
-    displayName: string | null;
-  };
-  accessToken: string;
-}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -78,7 +68,10 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     try {
-      const result = await apiClient.verifyEmailCode({ email: email.trim(), code: codeStr });
+      const result = await apiClient.verifyEmailCode({
+        email: email.trim(),
+        code: codeStr,
+      });
       setAccessToken(result.accessToken);
       router.replace("/");
     } catch (err) {
@@ -90,7 +83,7 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  }, [code, email]);
+  }, [code, email, router]);
 
   const handlePasswordLogin = useCallback(async () => {
     setLoading(true);
@@ -108,7 +101,7 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
-  }, [email, password]);
+  }, [email, password, router]);
 
   const handleCodeChange = useCallback(
     (index: number, value: string) => {
@@ -135,7 +128,10 @@ export default function LoginPage() {
   const handleCodePaste = useCallback(
     (e: React.ClipboardEvent) => {
       e.preventDefault();
-      const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+      const pasted = e.clipboardData
+        .getData("text")
+        .replace(/\D/g, "")
+        .slice(0, 6);
       if (!pasted) return;
       const next = [...code];
       for (let i = 0; i < pasted.length; i++) {
@@ -244,9 +240,9 @@ export default function LoginPage() {
           {mode === "otp" && step === "code" && (
             <div className="mb-4">
               <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-sm font-medium text-foreground">
+                <span className="text-sm font-medium text-foreground">
                   Verification Code
-                </label>
+                </span>
                 <button
                   type="button"
                   onClick={() => {

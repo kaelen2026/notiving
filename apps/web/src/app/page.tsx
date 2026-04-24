@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { apiClient, clearAccessToken } from "@/lib/api";
 
 interface User {
@@ -52,13 +52,16 @@ export default function Home() {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
-          <span className="text-lg font-semibold text-foreground">Notiving</span>
+          <span className="text-lg font-semibold text-foreground">
+            Notiving
+          </span>
           {user ? (
             <div className="flex items-center gap-3">
               <span className="text-sm text-foreground-secondary">
                 {user.displayName ?? user.username ?? "User"}
               </span>
               <button
+                type="button"
                 onClick={handleLogout}
                 className="rounded-md px-3 py-1.5 text-sm text-foreground-secondary transition-colors hover:bg-background-secondary hover:text-foreground"
               >
@@ -82,9 +85,7 @@ export default function Home() {
             <h1 className="text-2xl font-bold text-foreground">
               Welcome back{user.displayName ? `, ${user.displayName}` : ""}
             </h1>
-            <p className="mt-2 text-foreground-secondary">
-              You are logged in.
-            </p>
+            <p className="mt-2 text-foreground-secondary">You are logged in.</p>
           </div>
         ) : (
           <div className="text-center">

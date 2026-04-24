@@ -1,0 +1,23 @@
+#!/bin/sh
+
+CHANGED=$(git diff --cached --name-only)
+
+# 1. All TS projects: lint + typecheck (turbo cache makes unchanged projects instant)
+pnpm turbo lint typecheck || exit 1
+
+# 2. Android: only when apps/android/ or apps/rn/ changed
+if echo "$CHANGED" | grep -qE '^apps/(android|rn)/'; then
+  echo "🤖 Android files changed — running Gradle assembleDebug..."
+  (cd apps/android && ./gradlew assembleDebug --no-daemon -q) || exit 1
+fi
+
+# 3. iOS: only when apps/ios/ or apps/rn/ changed
+if echo "$CHANGED" | grep -qE '^apps/(ios|rn)/'; then
+  echo "🍎 iOS files changed — running xcodebuild..."
+  (cd apps/ios/notiving && xcodebuild build \
+    -workspace notiving.xcworkspace \
+    -scheme notiving \
+    -configuration Debug \
+    -destination 'generic/platform=iOS Simulator' \
+    CODE_SIGNING_ALLOWED=NO -quiet) || exit 1
+fi

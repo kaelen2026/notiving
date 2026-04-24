@@ -242,7 +242,7 @@ oauthRoute.post(
 
 		const { code, codeVerifier, user } = c.req.valid("json");
 		const anonymousUserId =
-			tryExtractUserId(c.req.header("Authorization")) ?? undefined;
+			(await tryExtractUserId(c.req.header("Authorization"))) ?? undefined;
 
 		let profile: OAuthProfile;
 		if (provider === "google") {
@@ -295,7 +295,7 @@ oauthRoute.post(
 			return fail(c, String(result.error), 409);
 		}
 
-		c.get("log").info("password linked to account");
+		c.get("log").info({}, "password linked to account");
 		return ok(c, { message: "Password set successfully" });
 	},
 );

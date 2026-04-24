@@ -5,7 +5,6 @@ import type {
 	Post,
 	Comment,
 	AuthResponse,
-	RefreshResponse,
 	TokenProvider,
 	ApiClientConfig,
 } from "./types/api.js";

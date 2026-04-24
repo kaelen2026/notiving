@@ -7,7 +7,9 @@ describe("Health Check", () => {
 	it("should return health status with checks", async () => {
 		const req = new Request("http://localhost/health");
 		const response = await app.fetch(req);
-		const body = await response.json();
+		const body = (await response.json()) as {
+			data: { status: string; database: unknown };
+		};
 
 		// In test env without real DB, status may be 503
 		expect([200, 503]).toContain(response.status);
@@ -29,7 +31,7 @@ describe("Auth Endpoints", () => {
 				}),
 			});
 			const response = await app.fetch(req);
-			const body = await response.json();
+			const body = (await response.json()) as { success: boolean };
 
 			expect(response.status).toBe(400);
 			expect(body.success).toBe(false);
@@ -46,7 +48,7 @@ describe("Auth Endpoints", () => {
 				}),
 			});
 			const response = await app.fetch(req);
-			const body = await response.json();
+			const body = (await response.json()) as { success: boolean };
 
 			expect(response.status).toBe(400);
 			expect(body.success).toBe(false);
@@ -63,7 +65,7 @@ describe("Auth Endpoints", () => {
 				}),
 			});
 			const response = await app.fetch(req);
-			const body = await response.json();
+			const body = (await response.json()) as { success: boolean };
 
 			expect(response.status).toBe(400);
 			expect(body.success).toBe(false);
@@ -78,7 +80,7 @@ describe("Auth Endpoints", () => {
 				body: JSON.stringify({}),
 			});
 			const response = await app.fetch(req);
-			const body = await response.json();
+			const body = (await response.json()) as { success: boolean };
 
 			expect(response.status).toBe(400);
 			expect(body.success).toBe(false);

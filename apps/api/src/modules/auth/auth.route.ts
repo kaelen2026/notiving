@@ -53,7 +53,7 @@ authRoute.post("/login", zValidator("json", loginSchema), async (c) => {
 	const input = c.req.valid("json");
 	const result = await authService.login(input);
 	if (!result) {
-		c.get("log").warn("login failed");
+		c.get("log").warn({}, "login failed");
 		return fail(c, "Invalid email or password", 401);
 	}
 
@@ -119,7 +119,7 @@ authRoute.post("/refresh", async (c) => {
 authRoute.post("/logout", authGuard, async (c) => {
 	const userId = c.get("userId");
 	await authService.logout(userId);
-	c.get("log").info("user logged out");
+	c.get("log").info({}, "user logged out");
 
 	if (isWeb(c)) {
 		deleteCookie(c, REFRESH_TOKEN_COOKIE, { path: "/api/v1/auth" });
@@ -163,15 +163,15 @@ authRoute.post(
 			(await tryExtractUserId(c.req.header("Authorization"))) ?? undefined;
 
 		try {
-			const result = await authService.verifyEmailCode(
-				input,
-				anonymousUserId,
-			);
+			const result = await authService.verifyEmailCode(input, anonymousUserId);
 			if (!result) {
 				return fail(c, "Invalid or expired code", 401);
 			}
 
-			c.get("log").info({ userId: result.user.id }, "user logged in via email OTP");
+			c.get("log").info(
+				{ userId: result.user.id },
+				"user logged in via email OTP",
+			);
 
 			if (isWeb(c)) {
 				setCookie(

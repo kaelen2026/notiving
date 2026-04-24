@@ -9,6 +9,7 @@
     "bundle:android": "react-native bundle --entry-file index.js --platform android --dev false --bundle-output dist/index.android.bundle --assets-dest dist/android-assets --sourcemap-output dist/index.android.bundle.map",
     "build": "pnpm run bundle:ios && pnpm run bundle:android",
     "lint": "biome check",
+    "typecheck": "tsc --noEmit",
     "format": "biome format --write",
     "test": "echo \"no tests yet\""
   },

@@ -3,10 +3,10 @@ import { bridge, isInShell } from "../lib/bridge";
 
 export default function Home() {
   const [token, setToken] = useState<string | null>(null);
-  const [env, setEnv] = useState<string>("checking...");
+
+  const env = isInShell() ? "Shell (Native)" : "Browser (Standalone)";
 
   useEffect(() => {
-    setEnv(isInShell() ? "Shell (Native)" : "Browser (Standalone)");
     bridge.getToken().then(setToken);
     bridge.ready();
   }, []);
