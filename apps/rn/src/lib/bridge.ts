@@ -1,11 +1,11 @@
-import { NativeModules, NativeEventEmitter } from "react-native";
 import type {
-  ShellBridge,
-  Session,
-  PermissionType,
-  PermissionResult,
   DeviceInfo,
+  PermissionResult,
+  PermissionType,
+  Session,
+  ShellBridge,
 } from "@notiving/bridge-types";
+import { NativeEventEmitter, NativeModules } from "react-native";
 
 const { ShellBridge: NativeBridge } = NativeModules;
 
