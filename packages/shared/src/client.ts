@@ -7,8 +7,8 @@ import type {
 	AuthResponse,
 	TokenProvider,
 	ApiClientConfig,
-} from "./types/api.js";
-import { ApiError } from "./types/api.js";
+} from "./types/api";
+import { ApiError } from "./types/api";
 import type {
 	RegisterInput,
 	LoginInput,
@@ -19,7 +19,7 @@ import type {
 	CreateCommentInput,
 	UpdateCommentInput,
 	UpdateUserInput,
-} from "./schemas/index.js";
+} from "./schemas/index";
 
 export { ApiError };
 
