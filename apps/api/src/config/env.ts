@@ -19,6 +19,7 @@ const envSchema = z.object({
 	APPLE_TEAM_ID: z.string().min(1).optional(),
 	APPLE_KEY_ID: z.string().min(1).optional(),
 	APPLE_PRIVATE_KEY: z.string().min(1).optional(),
+	APPLE_IOS_BUNDLE_ID: z.string().min(1).optional(),
 	OAUTH_REDIRECT_BASE_URL: z.string().url().optional(),
 	RESEND_API_KEY: z.string().min(1),
 	RESEND_FROM_EMAIL: z.string().email(),

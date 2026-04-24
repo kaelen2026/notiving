@@ -6,6 +6,7 @@ import { created, fail, ok } from "../../lib/api-response.js";
 import {
 	getAppleAuthorizationUrl,
 	handleAppleCallback,
+	handleAppleNativeCallback,
 } from "../../lib/oauth/apple.js";
 import type { OAuthProfile } from "../../lib/oauth/google.js";
 import {
@@ -270,7 +271,7 @@ oauthRoute.post(
 			}
 			profile = await handleGoogleCallback(code, codeVerifier);
 		} else {
-			profile = await handleAppleCallback(
+			profile = await handleAppleNativeCallback(
 				code,
 				user?.firstName,
 				user?.lastName,
