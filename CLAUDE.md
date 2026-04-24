@@ -14,6 +14,12 @@ Verify changes before reporting done: run `tsc --noEmit` and the relevant build 
 | `task-decomposition.md` | Vertical slices, acceptance criteria, scope guidelines |
 | `design.md` | Design system, color tokens, typography, spacing |
 | `bridge.md` | Native ↔ web bridge conventions |
+| `api.md` | Hono, Drizzle, module structure, response envelope, middleware |
+| `testing.md` | Vitest, test patterns, service/integration tests |
+| `security.md` | Auth, input validation, OWASP, secret management |
+| `react-native.md` | Embedded RN, ShellBridge, no-navigation pattern |
+| `harmonyos.md` | ArkTS, ArkUI, hilog, hypium testing |
+| `flutter.md` | Dart, Flutter module embed, Material3 |
 
 ## Git
 
