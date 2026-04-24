@@ -14,8 +14,11 @@ struct DeepLinkHandler {
         }
 
         if path.hasPrefix("/oauth/callback") {
-            if let token = components.queryItems?.first(where: { $0.name == "token" })?.value {
-                session.accessToken = token
+            if let accessToken = components.queryItems?.first(where: { $0.name == "accessToken" })?.value {
+                session.accessToken = accessToken
+                if let refreshToken = components.queryItems?.first(where: { $0.name == "refreshToken" })?.value {
+                    session.refreshToken = refreshToken
+                }
                 router.navigate(to: "/profile")
             }
             return

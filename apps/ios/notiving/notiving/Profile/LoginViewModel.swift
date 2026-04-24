@@ -20,7 +20,6 @@ final class LoginViewModel: ObservableObject {
     @Published var password = ""
     @Published var codeText = "" {
         didSet {
-            // Only allow digits, max 6 characters
             let filtered = String(codeText.filter { $0.isNumber }.prefix(6))
             if filtered != codeText {
                 codeText = filtered
@@ -31,7 +30,9 @@ final class LoginViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var error: String?
     @Published var countdown: Int = 0
+    @Published var isOAuthLoading = false
 
+    let oauthManager = OAuthManager()
     private var countdownTimer: Timer?
 
     var isFormValid: Bool {
@@ -89,6 +90,7 @@ final class LoginViewModel: ObservableObject {
             )
 
             SessionManager.shared.accessToken = result.accessToken
+            SessionManager.shared.refreshToken = result.refreshToken
             SessionManager.shared.userId = result.user.id
 
             isLoading = false
@@ -156,6 +158,7 @@ final class LoginViewModel: ObservableObject {
             )
 
             SessionManager.shared.accessToken = result.accessToken
+            SessionManager.shared.refreshToken = result.refreshToken
             SessionManager.shared.userId = result.user.id
 
             isLoading = false
@@ -202,6 +205,36 @@ final class LoginViewModel: ObservableObject {
         countdown = 0
         countdownTimer?.invalidate()
         countdownTimer = nil
+    }
+
+    // MARK: - OAuth
+
+    func signInWithGoogle() async -> (User, String)? {
+        isOAuthLoading = true
+        error = nil
+        do {
+            let result = try await oauthManager.signInWithGoogle()
+            isOAuthLoading = false
+            return result
+        } catch {
+            self.error = error.localizedDescription
+            isOAuthLoading = false
+            return nil
+        }
+    }
+
+    func signInWithApple() async -> (User, String)? {
+        isOAuthLoading = true
+        error = nil
+        do {
+            let result = try await oauthManager.signInWithApple()
+            isOAuthLoading = false
+            return result
+        } catch {
+            self.error = error.localizedDescription
+            isOAuthLoading = false
+            return nil
+        }
     }
 
     deinit {

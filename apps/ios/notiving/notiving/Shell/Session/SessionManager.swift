@@ -5,6 +5,7 @@ final class SessionManager {
 
     private let defaults = UserDefaults.standard
     private let tokenKey = "notiving_access_token"
+    private let refreshTokenKey = "notiving_refresh_token"
     private let userIdKey = "notiving_user_id"
     private let deviceIdKey = "notiving_device_id"
 
@@ -13,6 +14,11 @@ final class SessionManager {
     var accessToken: String? {
         get { defaults.string(forKey: tokenKey) }
         set { defaults.set(newValue, forKey: tokenKey) }
+    }
+
+    var refreshToken: String? {
+        get { defaults.string(forKey: refreshTokenKey) }
+        set { defaults.set(newValue, forKey: refreshTokenKey) }
     }
 
     var userId: String? {
@@ -33,6 +39,7 @@ final class SessionManager {
 
     func clear() {
         defaults.removeObject(forKey: tokenKey)
+        defaults.removeObject(forKey: refreshTokenKey)
         defaults.removeObject(forKey: userIdKey)
     }
 }

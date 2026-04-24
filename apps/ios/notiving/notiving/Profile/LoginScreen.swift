@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 
 struct LoginScreen: View {
@@ -6,27 +5,28 @@ struct LoginScreen: View {
     @StateObject private var viewModel = LoginViewModel()
     var onLoginSuccess: (User, String) -> Void
 
-    @FocusState private var isCodeFieldFocused: Bool
-
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 32) {
+                VStack(spacing: NVSpacing.xxl) {
                     headerView
+                    oauthSection
+                    divider
                     modePicker
                     formFields
-                    loginButton
+                    submitButton
                     errorMessage
                 }
-                .padding(.horizontal, 24)
-                .padding(.top, 40)
+                .padding(.horizontal, NVSpacing.xxl)
+                .padding(.top, NVSpacing.xxxl)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Color.nvBackgroundSecondary)
             .navigationTitle("Log In")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .foregroundStyle(Color.nvForegroundSecondary)
                 }
             }
         }
@@ -35,15 +35,53 @@ struct LoginScreen: View {
     // MARK: - Header
 
     private var headerView: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: NVSpacing.sm) {
             Image(systemName: "person.circle.fill")
-                .font(.system(size: 64))
-                .foregroundStyle(.tint)
+                .font(.system(size: 56))
+                .foregroundStyle(Color.nvPrimary)
             Text("Welcome Back")
-                .font(.title2.bold())
+                .font(.nv2XL.bold())
+                .foregroundStyle(Color.nvForeground)
             Text("Log in to access your profile")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.nvSM)
+                .foregroundStyle(Color.nvForegroundSecondary)
+        }
+    }
+
+    // MARK: - OAuth
+
+    private var oauthSection: some View {
+        VStack(spacing: NVSpacing.md) {
+            OAuthButton(provider: .apple, isLoading: viewModel.isOAuthLoading) {
+                Task {
+                    if let (user, token) = await viewModel.signInWithApple() {
+                        onLoginSuccess(user, token)
+                        dismiss()
+                    }
+                }
+            }
+            OAuthButton(provider: .google, isLoading: viewModel.isOAuthLoading) {
+                Task {
+                    if let (user, token) = await viewModel.signInWithGoogle() {
+                        onLoginSuccess(user, token)
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private var divider: some View {
+        HStack {
+            Rectangle()
+                .fill(Color.nvBorder)
+                .frame(height: 1)
+            Text("or")
+                .font(.nvSM)
+                .foregroundStyle(Color.nvForegroundTertiary)
+            Rectangle()
+                .fill(Color.nvBorder)
+                .frame(height: 1)
         }
     }
 
@@ -64,7 +102,7 @@ struct LoginScreen: View {
     // MARK: - Form
 
     private var formFields: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: NVSpacing.lg) {
             emailField
 
             switch viewModel.mode {
@@ -72,7 +110,7 @@ struct LoginScreen: View {
                 passwordField
             case .otp:
                 if viewModel.otpStep == .code {
-                    codeField
+                    codeSection
                 }
             }
         }
@@ -81,84 +119,61 @@ struct LoginScreen: View {
     private var emailField: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Email")
-                .font(.subheadline.weight(.medium))
+                .font(.nvSM.weight(.medium))
+                .foregroundStyle(Color.nvForeground)
             TextField("your@email.com", text: $viewModel.email)
                 .textContentType(.emailAddress)
                 .keyboardType(.emailAddress)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
                 .disabled(viewModel.mode == .otp && viewModel.otpStep == .code)
-                .padding(12)
-                .background(Color(.systemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(NVSpacing.md)
+                .background(Color.nvBackground)
+                .clipShape(RoundedRectangle(cornerRadius: NVRadius.md))
+                .overlay(
+                    RoundedRectangle(cornerRadius: NVRadius.md)
+                        .stroke(Color.nvBorder, lineWidth: 1)
+                )
         }
     }
 
     private var passwordField: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Password")
-                .font(.subheadline.weight(.medium))
+                .font(.nvSM.weight(.medium))
+                .foregroundStyle(Color.nvForeground)
             SecureField("Password", text: $viewModel.password)
                 .textContentType(.password)
-                .padding(12)
-                .background(Color(.systemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(NVSpacing.md)
+                .background(Color.nvBackground)
+                .clipShape(RoundedRectangle(cornerRadius: NVRadius.md))
+                .overlay(
+                    RoundedRectangle(cornerRadius: NVRadius.md)
+                        .stroke(Color.nvBorder, lineWidth: 1)
+                )
         }
     }
 
-    private var codeField: some View {
-        VStack(spacing: 12) {
+    private var codeSection: some View {
+        VStack(spacing: NVSpacing.md) {
             HStack {
                 Text("Verification Code")
-                    .font(.subheadline.weight(.medium))
+                    .font(.nvSM.weight(.medium))
+                    .foregroundStyle(Color.nvForeground)
                 Spacer()
                 Button("Change email") {
                     viewModel.changeEmail()
                 }
-                .font(.caption)
-                .foregroundStyle(.tint)
+                .font(.nvXS)
+                .foregroundStyle(Color.nvPrimary)
             }
 
             Text("Sent to \(viewModel.email.trimmingCharacters(in: .whitespaces))")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.nvXS)
+                .foregroundStyle(Color.nvForegroundSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            ZStack {
-                // Hidden single TextField that captures all input
-                TextField("", text: $viewModel.codeText)
-                    .keyboardType(.numberPad)
-                    .textContentType(.oneTimeCode)
-                    .focused($isCodeFieldFocused)
-                    .opacity(0)
-                    .frame(width: 1, height: 1)
-
-                // Visual code boxes
-                HStack(spacing: 8) {
-                    ForEach(0..<6, id: \.self) { index in
-                        let char = index < viewModel.codeText.count
-                            ? String(viewModel.codeText[viewModel.codeText.index(viewModel.codeText.startIndex, offsetBy: index)])
-                            : ""
-                        Text(char)
-                            .font(.title2.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 48)
-                            .background(Color(.systemBackground))
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(index == viewModel.codeText.count && isCodeFieldFocused == true ? Color.accentColor : Color.clear, lineWidth: 2)
-                            )
-                    }
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    isCodeFieldFocused = true
-                }
-            }
-            .onAppear {
-                isCodeFieldFocused = true
-            }
+            OTPCodeField(code: $viewModel.codeText)
 
             resendButton
         }
@@ -168,25 +183,29 @@ struct LoginScreen: View {
         Group {
             if viewModel.countdown > 0 {
                 Text("Resend in \(viewModel.countdown)s")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(.nvXS)
+                    .foregroundStyle(Color.nvForegroundTertiary)
             } else {
                 Button {
                     Task { await viewModel.sendCode() }
                 } label: {
                     Text("Resend code")
-                        .font(.caption)
-                        .foregroundStyle(.tint)
+                        .font(.nvXS)
+                        .foregroundStyle(Color.nvPrimary)
                 }
                 .disabled(viewModel.isLoading)
             }
         }
     }
 
-    // MARK: - Button
+    // MARK: - Submit
 
-    private var loginButton: some View {
-        Button {
+    private var submitButton: some View {
+        BrandButton(
+            title: viewModel.submitButtonTitle,
+            isLoading: viewModel.isLoading,
+            isEnabled: viewModel.isFormValid
+        ) {
             Task {
                 switch viewModel.mode {
                 case .password:
@@ -206,23 +225,7 @@ struct LoginScreen: View {
                     }
                 }
             }
-        } label: {
-            HStack {
-                if viewModel.isLoading {
-                    ProgressView()
-                        .tint(.white)
-                } else {
-                    Text(viewModel.submitButtonTitle)
-                        .fontWeight(.semibold)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(viewModel.isFormValid ? Color.accentColor : Color.gray.opacity(0.3))
-            .foregroundStyle(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
-        .disabled(!viewModel.isFormValid || viewModel.isLoading)
     }
 
     // MARK: - Error
@@ -231,10 +234,9 @@ struct LoginScreen: View {
     private var errorMessage: some View {
         if let error = viewModel.error {
             Text(error)
-                .font(.footnote)
-                .foregroundStyle(.red)
+                .font(.nvSM)
+                .foregroundStyle(Color.nvDestructive)
                 .multilineTextAlignment(.center)
         }
     }
-
 }

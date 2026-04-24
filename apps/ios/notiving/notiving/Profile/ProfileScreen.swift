@@ -1,4 +1,3 @@
-import Combine
 import SwiftUI
 
 struct ProfileScreen: View {
@@ -11,22 +10,22 @@ struct ProfileScreen: View {
                 if viewModel.isLoading {
                     loadingView
                 } else if let user = viewModel.user {
-                    userHeaderView(user)
+                    userHeader(user)
                 } else {
-                    guestHeaderView
+                    guestHeader
                 }
 
                 menuSection
             }
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color.nvBackgroundSecondary)
         .task {
             await viewModel.loadProfile()
         }
         .refreshable {
             await viewModel.loadProfile()
         }
-        .fullScreenCover(isPresented: $showLogin) {
+        .sheet(isPresented: $showLogin) {
             LoginScreen { user, _ in
                 viewModel.user = user
                 viewModel.error = nil
@@ -36,131 +35,93 @@ struct ProfileScreen: View {
 
     // MARK: - User Header
 
-    private func userHeaderView(_ user: User) -> some View {
-        VStack(spacing: 16) {
-            avatarView(user)
+    private func userHeader(_ user: User) -> some View {
+        VStack(spacing: NVSpacing.lg) {
+            AvatarView(url: user.avatarUrl, initials: user.initials)
 
-            VStack(spacing: 4) {
+            VStack(spacing: NVSpacing.xs) {
                 Text(user.nameForDisplay)
-                    .font(.title2.bold())
+                    .font(.nv2XL.bold())
+                    .foregroundStyle(Color.nvForeground)
 
                 if let username = user.username, !username.isEmpty {
                     Text("@\(username)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.nvSM)
+                        .foregroundStyle(Color.nvForegroundSecondary)
                 }
 
                 if let bio = user.bio, !bio.isEmpty {
                     Text(bio)
-                        .font(.body)
-                        .foregroundStyle(.secondary)
+                        .font(.nvBase)
+                        .foregroundStyle(Color.nvForegroundSecondary)
                         .multilineTextAlignment(.center)
-                        .padding(.top, 4)
+                        .padding(.top, NVSpacing.xs)
                 }
             }
         }
-        .padding(.vertical, 24)
-        .padding(.horizontal, 16)
+        .padding(.vertical, NVSpacing.xxl)
+        .padding(.horizontal, NVSpacing.lg)
         .frame(maxWidth: .infinity)
-        .background(Color(.systemBackground))
-    }
-
-    @ViewBuilder
-    private func avatarView(_ user: User) -> some View {
-        if let avatarUrl = user.avatarUrl, let url = URL(string: avatarUrl) {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    initialsAvatar(user)
-                default:
-                    ProgressView()
-                        .frame(width: 80, height: 80)
-                }
-            }
-            .frame(width: 80, height: 80)
-            .clipShape(Circle())
-        } else {
-            initialsAvatar(user)
-        }
-    }
-
-    private func initialsAvatar(_ user: User) -> some View {
-        Circle()
-            .fill(Color.accentColor.opacity(0.15))
-            .frame(width: 80, height: 80)
-            .overlay(
-                Text(user.initials)
-                    .font(.title2.bold())
-                    .foregroundStyle(Color.accentColor)
-            )
+        .background(Color.nvSurface)
     }
 
     // MARK: - Guest Header
 
-    private var guestHeaderView: some View {
-        Button {
-            showLogin = true
-        } label: {
-            VStack(spacing: 16) {
-                Circle()
-                    .fill(Color(.systemGray5))
-                    .frame(width: 80, height: 80)
-                    .overlay(
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 32))
-                            .foregroundStyle(Color(.systemGray2))
-                    )
+    private var guestHeader: some View {
+        VStack(spacing: NVSpacing.xl) {
+            AvatarView(url: nil, initials: "?", size: 88)
 
-                VStack(spacing: 4) {
-                    Text("Tap to Log In")
-                        .font(.title2.bold())
-                        .foregroundStyle(.primary)
-                    Text("Log in to access your full profile")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
+            VStack(spacing: NVSpacing.sm) {
+                Text("Join Notiving")
+                    .font(.nv2XL.bold())
+                    .foregroundStyle(Color.nvForeground)
+                Text("Sign in to save your content and sync across devices")
+                    .font(.nvSM)
+                    .foregroundStyle(Color.nvForegroundSecondary)
+                    .multilineTextAlignment(.center)
             }
-            .padding(.vertical, 24)
-            .padding(.horizontal, 16)
-            .frame(maxWidth: .infinity)
-            .background(Color(.systemBackground))
+
+            BrandButton(title: "Sign In") {
+                showLogin = true
+            }
+            .padding(.horizontal, NVSpacing.xxxl)
         }
+        .padding(.vertical, NVSpacing.xxxl)
+        .padding(.horizontal, NVSpacing.lg)
+        .frame(maxWidth: .infinity)
+        .background(Color.nvSurface)
     }
 
-    // MARK: - Menu Section
+    // MARK: - Menu
 
     private var menuSection: some View {
         VStack(spacing: 0) {
             if viewModel.user != nil {
-                menuGroup {
-                    menuRow(icon: "person", title: "Edit Profile")
+                MenuGroup {
+                    MenuRow(icon: "person", title: "Edit Profile")
                     Divider().padding(.leading, 44)
                     NavigationLink {
                         SettingsScreen()
                     } label: {
-                        menuLabel(icon: "gearshape", title: "Settings")
+                        MenuRow(icon: "gearshape", title: "Settings").label
                     }
                     Divider().padding(.leading, 44)
-                    menuRow(icon: "bell", title: "Notifications")
+                    MenuRow(icon: "bell", title: "Notifications")
                 }
             } else {
-                menuGroup {
+                MenuGroup {
                     NavigationLink {
                         SettingsScreen()
                     } label: {
-                        menuLabel(icon: "gearshape", title: "Settings")
+                        MenuRow(icon: "gearshape", title: "Settings").label
                     }
                 }
             }
 
-            menuGroup {
-                menuRow(icon: "questionmark.circle", title: "Help & Support")
+            MenuGroup {
+                MenuRow(icon: "questionmark.circle", title: "Help & Support")
                 Divider().padding(.leading, 44)
-                menuRow(icon: "info.circle", title: "About")
+                MenuRow(icon: "info.circle", title: "About")
             }
 
             if viewModel.user != nil {
@@ -170,60 +131,29 @@ struct ProfileScreen: View {
                     HStack {
                         Spacer()
                         Text("Log Out")
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.nvDestructive)
                         Spacer()
                     }
                     .padding(.vertical, 14)
-                    .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .background(Color.nvSurface)
+                    .clipShape(RoundedRectangle(cornerRadius: NVRadius.md))
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 24)
+                .padding(.horizontal, NVSpacing.lg)
+                .padding(.top, NVSpacing.xxl)
             }
         }
-        .padding(.top, 8)
+        .padding(.top, NVSpacing.sm)
     }
 
-    private func menuGroup<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        VStack(spacing: 0) {
-            content()
-        }
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .padding(.horizontal, 16)
-        .padding(.top, 16)
-    }
-
-    private func menuLabel(icon: String, title: String) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .frame(width: 20)
-                .foregroundStyle(.primary)
-            Text(title)
-                .foregroundStyle(.primary)
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-    }
-
-    private func menuRow(icon: String, title: String) -> some View {
-        Button(action: {}) {
-            menuLabel(icon: icon, title: title)
-        }
-    }
-
-    // MARK: - States
+    // MARK: - Loading
 
     private var loadingView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: NVSpacing.md) {
             ProgressView()
+                .tint(Color.nvPrimary)
             Text("Loading profile...")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.nvSM)
+                .foregroundStyle(Color.nvForegroundSecondary)
         }
         .frame(maxWidth: .infinity, minHeight: 300)
     }
