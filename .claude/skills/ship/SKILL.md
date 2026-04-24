@@ -14,12 +14,15 @@ metadata:
       - "创建 PR"
       - "push"
       - "发 PR"
+      - "commit"
+      - "提交代码"
     anyOf:
       - "ship"
       - "PR"
       - "push"
       - "提交"
       - "merge"
+      - "commit"
     minScore: 6
 ---
 

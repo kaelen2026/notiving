@@ -12,6 +12,7 @@
 | [测试驱动开发](tdd.md) | "用 TDD 给 posts 加分页" | `/tdd` | planner → implementer → reviewer |
 | [审查 + 提交 PR](code-review-and-ship.md) | "review 一下，没问题就提 PR" | `/code-review` → `/ship` | reviewer |
 | [Agent 调度参考](agent-dispatch.md) | 速查表 | — | 全部 |
+| [Worktree 隔离开发](worktree.md) | "跨三端重构，用 worktree" | `/worktree` → `/implement` → `/ship` | 全部 |
 
 ## 统一结构
 

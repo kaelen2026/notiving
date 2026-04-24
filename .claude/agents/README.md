@@ -17,7 +17,7 @@
 researcher -> planner -> implementer -> reviewer
 ```
 
-可以从任意角色开始，按需组合。但主 agent **必须**主动调度这些 sub-agent，而不是自己包揽所有工作。详见 `CLAUDE.md` 中的 "Sub-Agent 协作规范"。
+可以从任意角色开始，按需组合。但主 agent **必须**主动调度这些 sub-agent，而不是自己包揽所有工作。详见 `CLAUDE.md` 中的 "Sub-Agent 调度规范" 和 "验收闭环"。
 
 ### 各 command 应该调度哪些 agent
 
@@ -38,6 +38,17 @@ researcher -> planner -> implementer -> reviewer
 | `implement` | **必须** — 调研相关代码 | **推荐** — 非平凡任务确认方案 | **必须** — 执行代码改动 | **必须** — 审查实现 |
 | `ship` | — | — | — | **必须** — 自检 checklist |
 | `bug-fix` | **必须** — 定位相关代码 | — | **必须** — 实现修复 | **必须** — 审查修复 |
+| `worktree` | — | — | — | — |
+
+### 验收闭环
+
+所有包含 reviewer **必须** 的 command，在 reviewer 审查通过后，还需按 `CLAUDE.md` "验收闭环" 章节输出验收报告。流程：
+
+```
+implementer 完成 → quality-gate（自动化检查）→ reviewer（结构化审查）→ 验收报告（输出给用户）
+```
+
+reviewer 输出 `Verdict: fail` 时，必须回到 implementer 修复后重新审查，不可跳过。
 
 ### idea-to-issues 与 sub-agent 调度
 
